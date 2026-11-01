@@ -108,6 +108,14 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
     <button data-view="dots" aria-pressed="true">Dots</button>
     <button data-view="curve" aria-pressed="false">Curve</button>
     <button data-view="ring" aria-pressed="false">Ring</button>
+    <button data-view="scan" aria-pressed="false">Scan</button>
+  </div>
+  <div class="bar" id="scanbar" hidden>
+    <select id="scanType" aria-label="Scan type" style="flex:1">
+      <option value="last3">Last 3 games above his average</option>
+      <option value="season">Games above his own average</option>
+      <option value="pos">Games above position average</option>
+    </select>
   </div>
   <div id="filters">
     <div class="wide">
@@ -163,7 +171,7 @@ const $ = id => document.getElementById(id);
 const YDS = new Set(["receiving_yards","rushing_yards","rush_rec_yds","passing_yards"]);
 const PCT = new Set(["snap_pct","target_share"]);
 let players = [], shown = 60, view = "dots", teams = new Set(), positions = new Set();
-const INPUTS = ["stat","line","minSnap","minGames","maxDuds","lastN","dropSnap","sort","search"];
+const INPUTS = ["stat","line","minSnap","minGames","maxDuds","lastN","dropSnap","sort","search","scanType"];
 
 /* ---------- prefs ---------- */
 function savePrefs(){
@@ -322,6 +330,7 @@ function ladder(r, stat){
 
 /* ---------- render ---------- */
 function render(){
+  if(view === "scan") return renderScan();
   savePrefs();
   const {out, line, stat, eff} = compute();
   const label = $("stat").selectedOptions[0].textContent;
@@ -341,6 +350,79 @@ function render(){
   }).join("") || `<div class="empty"><h2>No players match</h2><p>Lower the snap % or games filter, raise max dud games, or clear positions and teams.</p></div>`;
   $("more").hidden = out.length <= shown;
 }
+/* ---------- bulk scan ---------- */
+const SCAN = {
+  QB: ["passing_yards","passing_tds","rushing_yards","carries"],
+  RB: ["rushing_yards","carries","rush_rec_yds","receptions","targets","rz_carries","snap_pct"],
+  WR: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"],
+  TE: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"]
+};
+const MINAVG = {passing_yards:100, passing_tds:0.5, rushing_yards:15, carries:3, rush_rec_yds:20, receptions:1.5,
+  targets:2, receiving_yards:15, rz_targets:0.3, rz_carries:0.3, target_share:5, snap_pct:0};
+const mean = a => a.reduce((s,v) => s + v, 0) / a.length;
+function statLabel(k){ const o = $("stat").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; }
+
+function renderScan(){
+  savePrefs();
+  const type = $("scanType").value;
+  const minSnap = parseFloat($("minSnap").value) || 0, minGames = parseInt($("minGames").value) || 1;
+  const lastN = parseInt($("lastN").value) || 0, dropSnap = parseFloat($("dropSnap").value) || 0;
+  const term = $("search").value.trim().toLowerCase();
+  const pool = [];
+  for(const p of players){
+    if(!SCAN[p.pos]) continue;
+    if(positions.size && !positions.has(p.pos)) continue;
+    if(teams.size && !teams.has(p.team)) continue;
+    if(term && !p.name.toLowerCase().includes(term)) continue;
+    let games = p.games.filter(g => g.snap_pct === null || g.snap_pct >= dropSnap);
+    if(lastN) games = games.slice(-lastN);
+    if(games.length < Math.max(minGames, type === "last3" ? 4 : 1)) continue;
+    const sg = games.filter(g => g.snap_pct !== null);
+    const avgSnap = sg.length ? mean(sg.map(g => g.snap_pct)) : 0;
+    if(avgSnap < minSnap) continue;
+    pool.push({p, games});
+  }
+  const posAvg = {};
+  if(type === "pos"){
+    const acc = {};
+    for(const it of pool) for(const st of SCAN[it.p.pos]){
+      const k = it.p.pos + "|" + st; acc[k] = acc[k] || [0,0];
+      it.games.forEach(g => { acc[k][0] += g[st] || 0; acc[k][1]++; });
+    }
+    for(const k in acc) posAvg[k] = acc[k][0] / acc[k][1];
+  }
+  const res = [];
+  for(const it of pool) for(const st of SCAN[it.p.pos]){
+    const vals = it.games.map(g => g[st] || 0), avg = mean(vals);
+    if(avg < MINAVG[st] || avg <= 0) continue;
+    let k, den, bench, recentAvg = null, score;
+    if(type === "last3"){
+      const rec = vals.slice(-3); bench = avg; k = rec.filter(v => v > avg).length; den = 3;
+      recentAvg = mean(rec); score = k * 1000 + (recentAvg - avg) / avg * 100;
+    }else if(type === "season"){
+      bench = avg; k = vals.filter(v => v > avg).length; den = vals.length; score = k / den * 1000 + den;
+    }else{
+      bench = posAvg[it.p.pos + "|" + st]; if(!bench) continue;
+      k = vals.filter(v => v > bench).length; den = vals.length; score = k / den * 1000 + avg / bench;
+    }
+    res.push({p: it.p, st, vals, sorted: [...vals].sort((a,b) => a - b), avg, bench, k, den, recentAvg, score});
+  }
+  res.sort((a,b) => b.score - a.score);
+  const desc = {last3: "last 3 above his avg", season: "games above his avg", pos: "games above position avg"}[type];
+  $("summary").textContent = `${res.length} player and stat combos scanned. Showing the top ${Math.min(res.length, shown)}.`;
+  $("list").innerHTML = res.slice(0, shown).map((r, i) => {
+    const diff = type === "last3" ? r.recentAvg - r.avg : r.avg - r.bench;
+    return `<div class="row" tabindex="0">
+      <div class="rhead"><div><div class="name">${i + 1}. ${r.p.name}</div><div class="team">${r.p.pos}, ${r.p.team}, ${statLabel(r.st)}</div></div>
+      <div class="big num">${r.k}/${r.den}<small>${desc}</small></div></div>
+      <div class="stats"><span>His avg<b>${fmt(r.avg)}</b></span>
+      ${type === "last3" ? `<span>Last 3 avg<b>${fmt(r.recentAvg)}</b></span>` : type === "pos" ? `<span>Pos avg<b>${fmt(r.bench)}</b></span>` : ""}
+      ${type !== "season" ? `<span class="${diff >= 0 ? "pos" : "neg"}">Diff<b>${diff >= 0 ? "+" : ""}${fmt(diff)}</b></span>` : ""}<span>Games<b>${r.vals.length}</b></span></div>
+      ${strip(r, r.bench)}</div>`;
+  }).join("") || `<div class="empty"><h2>Nothing to scan</h2><p>Loosen the snap %, games, position, or team filters.</p></div>`;
+  $("more").hidden = res.length <= shown;
+}
+
 function renderTeams(){
   const all = [...new Set(players.map(p => p.team).filter(Boolean))].sort();
   for(const t of [...teams]) if(!all.includes(t)) teams.delete(t);
@@ -348,6 +430,8 @@ function renderTeams(){
 }
 function syncChips(){
   document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
+  $("scanbar").hidden = view !== "scan";
+  $("stat").disabled = $("line").disabled = view === "scan";
   document.querySelectorAll("#positions button").forEach(b => b.setAttribute("aria-pressed", positions.has(b.dataset.pos)));
 }
 function useText(text, info){
