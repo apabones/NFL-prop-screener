@@ -3,466 +3,397 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NFL Floor Screener</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<title>Critter Board: College Hoops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#EDF0F4; --surface:#FFFFFF; --ink:#15202B; --muted:#5B6878; --rule:#D6DCE4;
-  --court:#1D3A8A; --hit:#E07B1F; --miss:#3F6FC4; --dot:#8796A8; --chip:#E3E8EF; --up:#1F8A4C; --down:#C8372D;
-  color-scheme:light; box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#0F1620; --surface:#17212E; --ink:#E6ECF2; --muted:#93A1B2; --rule:#273444;
-    --court:#7D9BF7; --hit:#F5933A; --miss:#6F95D6; --dot:#6C7C90; --chip:#22303F; --up:#43C07A; --down:#F06A5E;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0F1620; --surface:#17212E; --ink:#E6ECF2; --muted:#93A1B2; --rule:#273444;
-  --court:#7D9BF7; --hit:#F5933A; --miss:#6F95D6; --dot:#6C7C90; --chip:#22303F; --up:#43C07A; --down:#F06A5E;
-  color-scheme:dark;
-}
+:root{--bg:#efe7d8;--surface:#fbf6ec;--ink:#221d16;--muted:#6f6556;--line:#dccfb8;--accent:#b4410e;--good:#15803d;--bad:#b91c1c;--warn:#a16207;--fav:#1d4ed8;--dog:#9a3412;
+ color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17140f;--surface:#211d17;--ink:#f2ead9;--muted:#a89d8b;--line:#3b342a;--accent:#fb923c;--good:#4ade80;--bad:#f87171;--warn:#facc15;--fav:#60a5fa;--dog:#fb923c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17140f;--surface:#211d17;--ink:#f2ead9;--muted:#a89d8b;--line:#3b342a;--accent:#fb923c;--good:#4ade80;--bad:#f87171;--warn:#facc15;--fav:#60a5fa;--dog:#fb923c;color-scheme:dark}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 "Barlow",system-ui,sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.num,h1,.big,select,input,button,.filebtn{font-family:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--rule);padding:10px 14px}
-.toprow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-h1{margin:0;font-size:24px;font-weight:700}
-.season{color:var(--muted);font-size:13px;text-align:right}
-.bar{display:flex;gap:8px;margin-top:8px;align-items:center}
-select,input{font-size:17px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid transparent;border-radius:8px;padding:7px 9px;min-width:0}
-select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--court);outline-offset:1px}
-#stat{flex:1.4}
-#line{flex:1;width:0}
-button{font-size:16px;font-weight:600;border-radius:8px;padding:7px 12px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.chips button{padding:4px 9px;font-size:14px;min-width:46px}
-.views{display:flex;gap:6px;margin-top:8px}
-.views button{flex:1;padding:5px 8px;font-size:15px}
-button[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--surface)}
-#filters{display:none;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);max-height:60vh;overflow-y:auto}
-#filters.open{display:grid}
-#filters label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
-.wide{grid-column:1/-1}
-.subhead{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
-.subhead button{padding:3px 10px;font-size:14px}
-.filebtn{position:relative;display:inline-block;overflow:hidden;font-size:16px;font-weight:600;border-radius:8px;padding:9px 14px;background:var(--court);color:var(--surface);cursor:pointer}
-.filebtn input{position:absolute;inset:0;opacity:0;font-size:100px;cursor:pointer}
-main{max-width:760px;margin:0 auto;padding:6px 10px 40px}
-.empty{background:var(--surface);border-radius:12px;padding:22px 18px;margin-top:14px}
-.empty h2{margin:0 0 6px;font:700 22px "Barlow Condensed",sans-serif}
-.empty p{margin:0 0 14px;color:var(--muted)}
-.summary{color:var(--muted);font-size:13px;padding:8px 4px 6px}
-.row{background:var(--surface);border-radius:10px;margin:6px 0;padding:10px 12px;cursor:pointer}
-.row:focus-visible{outline:2px solid var(--court)}
-.rhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.name{font-weight:600;font-size:16px;line-height:1.2}
-.team{color:var(--muted);font-size:13px}
-.big{font-size:26px;font-weight:700;line-height:1;text-align:right}
-.big small{display:block;font:500 12px "Barlow",sans-serif;color:var(--muted);margin-top:2px}
-.stats{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:13px;color:var(--muted)}
-.stats b{font:600 15px "Barlow Condensed",sans-serif;color:var(--ink);margin-left:3px}
-.stats .dud b,.stats .neg b{color:var(--down)}
-.stats .pos b{color:var(--up)}
-svg.strip{display:block;width:100%;height:30px;margin-top:6px}
-svg.curve{display:block;width:100%;height:auto;margin-top:6px}
-svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
-.ladder{display:none;margin-top:8px;border-top:1px solid var(--rule);padding-top:8px;overflow-x:auto}
-.row.open .ladder{display:block}
-.ladder table{border-collapse:collapse;font-size:14px}
-.ladder td{padding:3px 10px 3px 0;white-space:nowrap}
-.ladder td:first-child{color:var(--muted)}
-.more{display:block;margin:12px auto}
-.note{color:var(--muted);font-size:13px;margin:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.4 Barlow,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:14px 12px 40px}
+h1{font:700 28px/1 "Barlow Condensed","Arial Narrow",sans-serif;margin:2px 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 10px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;font:600 14px Barlow,sans-serif;padding:8px 4px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.game{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.game.faded{opacity:.72}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.mu{font:700 18px/1.15 "Barlow Condensed",sans-serif}
+.mu .fav{color:var(--fav)} .mu .dog{color:var(--muted);font-weight:600}
+.tier{font:700 13px "Barlow Condensed",sans-serif;padding:2px 8px;border-radius:999px;background:var(--ink);color:var(--surface);white-space:nowrap}
+.tier.early{background:transparent;color:var(--muted);border:1px dashed var(--muted)}
+.lc{font-size:13px;color:var(--muted);margin-top:3px;font-variant-numeric:tabular-nums}
+.lc b{color:var(--ink)}
+.flags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.f{font:600 12px Barlow,sans-serif;padding:2px 8px;border-radius:999px}
+.f.bet{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.f.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.f.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.f.info{background:color-mix(in srgb,var(--fav) 15%,transparent);color:var(--fav)}
+details{margin-top:6px}
+summary{font-size:13px;color:var(--accent);cursor:pointer}
+.pill{display:grid;grid-template-columns:7.5em 1fr 1fr 2.6em;gap:6px;align-items:center;font-size:12.5px;margin-top:5px}
+.gap{text-align:right;font-variant-numeric:tabular-nums}
+.bar{position:relative;height:9px;background:color-mix(in srgb,var(--line) 70%,transparent);border-radius:5px}
+.bar i{position:absolute;top:0;bottom:0;border-radius:5px}
+.bar em{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--muted)}
+.xp{display:flex;gap:6px;align-items:center;margin-top:8px;font-size:13px}
+.xp input{width:5.5em;font:500 15px Barlow,sans-serif;padding:5px 7px;border-radius:7px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:24px 8px}
+.status{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.5}
+.search{width:100%;font:500 16px Barlow,sans-serif;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);margin-bottom:8px}
+.legend{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
+.duo{display:flex;align-items:center;gap:8px}
+.ic{width:46px;height:50px;flex:none}
+.ic svg{width:46px;height:50px;display:block;background:#f6efe2;border-radius:10px}
+.sp{font:600 11px Barlow,sans-serif;color:var(--muted);text-align:center;margin-top:1px}
+.day{font:700 16px "Barlow Condensed",sans-serif;margin:14px 0 6px;color:var(--accent)}
+.prev{font:600 11px Barlow,sans-serif;color:var(--muted);border:1px dashed var(--muted);border-radius:999px;padding:1px 6px;margin-left:6px}
 </style>
 </head>
 <body>
-<header>
-  <div class="toprow"><h1>NFL Floor Screener</h1><span class="season" id="season">Loading…</span></div>
-  <div class="bar">
-    <select id="stat" aria-label="Stat">
-      <option value="receptions">Receptions</option>
-      <option value="targets">Targets</option>
-      <option value="receiving_yards">Receiving yards</option>
-      <option value="rushing_yards">Rushing yards</option>
-      <option value="carries">Rush attempts</option>
-      <option value="rush_rec_yds">Rush + rec yards</option>
-      <option value="passing_yards">Passing yards</option>
-      <option value="passing_tds">Passing TDs</option>
-      <option value="total_tds">Anytime TD (rush + rec)</option>
-      <option value="rz_targets">Red zone targets</option>
-      <option value="rz_carries">Red zone carries</option>
-      <option value="snap_pct">Snap %</option>
-      <option value="target_share">Target share %</option>
-    </select>
-    <input id="line" type="number" inputmode="decimal" step="0.5" placeholder="Line, e.g. 4.5 or 1" aria-label="Prop line">
-    <button id="toggle" aria-expanded="false" aria-controls="filters">Filters</button>
-  </div>
-  <div class="views" role="group" aria-label="Card view">
-    <button data-view="dots" aria-pressed="true">Dots</button>
-    <button data-view="curve" aria-pressed="false">Curve</button>
-    <button data-view="ring" aria-pressed="false">Ring</button>
-    <button data-view="scan" aria-pressed="false">Scan</button>
-  </div>
-  <div class="bar" id="scanbar" hidden>
-    <select id="scanType" aria-label="Scan type" style="flex:1">
-      <option value="last3">Last 3 games above his average</option>
-      <option value="season">Games above his own average</option>
-      <option value="pos">Games above position average</option>
-    </select>
-  </div>
-  <div id="filters">
-    <div class="wide">
-      <div class="subhead">Positions (none = all)</div>
-      <div class="chips" id="positions">
-        <button type="button" data-pos="QB" aria-pressed="false">QB</button>
-        <button type="button" data-pos="RB" aria-pressed="false">RB</button>
-        <button type="button" data-pos="WR" aria-pressed="false">WR</button>
-        <button type="button" data-pos="TE" aria-pressed="false">TE</button>
-      </div>
-    </div>
-    <label>Min avg snap %<input id="minSnap" type="number" inputmode="decimal" value="40"></label>
-    <label>Min games<input id="minGames" type="number" inputmode="numeric" value="3"></label>
-    <label>Max dud games<input id="maxDuds" type="number" inputmode="numeric" placeholder="Any"></label>
-    <label>Last N games<input id="lastN" type="number" inputmode="numeric" placeholder="All"></label>
-    <label>Ignore games under snap %<input id="dropSnap" type="number" inputmode="decimal" value="25"></label>
-    <label>Sort by
-      <select id="sort">
-        <option value="hit">Hit rate at line</option>
-        <option value="trend">Trend (last 3 vs before)</option>
-        <option value="ratio">Floor ratio</option>
-        <option value="p10">10th percentile</option>
-        <option value="avg">Average</option>
-        <option value="duds">Fewest dud games</option>
-        <option value="catch">Catch %</option>
-      </select>
-    </label>
-    <label class="wide">Player<input id="search" type="search" placeholder="e.g. Lamb"></label>
-    <div class="wide">
-      <div class="subhead">Teams (none = all)<button id="clearTeams" type="button">Clear</button></div>
-      <div class="chips" id="teams"></div>
-    </div>
-    <p class="note wide">Whole-number lines mean “at least” (1 = 1+). A dud game is under half the player’s average. Trend compares his last 3 games to his earlier games. Games where he played under the snap % cutoff (injury exits) are ignored.</p>
-  </div>
-</header>
-
 <main>
-  <div class="empty" id="empty" hidden>
-    <h2>Couldn’t load the latest data</h2>
-    <p>The automatic download didn’t work here. You can load an nfl_weekly CSV by hand.</p>
-    <label class="filebtn">Choose CSV<input id="file" type="file" accept=".csv,text/csv,text/plain"></label>
-  </div>
-  <div id="results" hidden>
-    <div class="summary" id="summary"></div>
-    <div id="list"></div>
-    <button class="more" id="more" hidden>Show more players</button>
-  </div>
+<h1>Critter Board</h1>
+<p class="sub" id="sub">Loading…</p>
+<div class="tabs" role="group" aria-label="View">
+ <button data-v="bet" aria-pressed="true">Bet Mode</button>
+ <button data-v="up" aria-pressed="false">Upcoming</button>
+ <button data-v="line" aria-pressed="false">Lines</button>
+ <button data-v="teams" aria-pressed="false">Teams</button>
+ <button data-v="movers" aria-pressed="false">Movers</button>
+</div>
+<div id="view"></div>
+<div class="status" id="status"></div>
 </main>
-
 <script>
-(function(){
-const $ = id => document.getElementById(id);
-const YDS = new Set(["receiving_yards","rushing_yards","rush_rec_yds","passing_yards"]);
-const PCT = new Set(["snap_pct","target_share"]);
-let players = [], shown = 60, view = "dots", teams = new Set(), positions = new Set();
-const INPUTS = ["stat","line","minSnap","minGames","maxDuds","lastN","dropSnap","sort","search","scanType"];
-
-/* ---------- prefs ---------- */
-function savePrefs(){
-  try{
-    const p = {}; INPUTS.forEach(k => p[k] = $(k).value);
-    p.view = view; p.teams = [...teams]; p.positions = [...positions];
-    localStorage.setItem("nflfloor-prefs", JSON.stringify(p));
-  }catch(e){}
-}
-function loadPrefs(){
-  try{
-    const p = JSON.parse(localStorage.getItem("nflfloor-prefs") || "null"); if(!p) return;
-    INPUTS.forEach(k => { if(p[k] !== undefined) $(k).value = p[k]; });
-    if(p.view) view = p.view;
-    if(Array.isArray(p.teams)) teams = new Set(p.teams);
-    if(Array.isArray(p.positions)) positions = new Set(p.positions);
-  }catch(e){}
-}
-
-/* ---------- data ---------- */
-function parseCSV(text){
-  const lines = text.replace(/\r/g,"").split("\n").filter(Boolean);
-  const split = l => { const out = []; let cur = "", q = false;
-    for(const ch of l){ if(ch === '"') q = !q; else if(ch === "," && !q){ out.push(cur); cur = ""; } else cur += ch; }
-    out.push(cur); return out; };
-  const head = split(lines[0]);
-  return lines.slice(1).map(l => { const v = split(l), o = {}; head.forEach((h,i) => o[h] = v[i]); return o; });
-}
-function build(rows){
-  const map = new Map();
-  for(const r of rows){
-    if(!r.player_id) continue;
-    if(!map.has(r.player_id)) map.set(r.player_id, {id:r.player_id, name:r.player, pos:r.position, team:"", lastWeek:0, games:[]});
-    const p = map.get(r.player_id), g = {week: +r.week || 0};
-    for(const k in r) if(!["player_id","player","position","team","opponent","game_id","week"].includes(k)) g[k] = r[k] === "" ? null : parseFloat(r[k]);
-    g.opp = r.opponent;
-    p.games.push(g);
-    if(g.week >= p.lastWeek){ p.lastWeek = g.week; p.team = r.team; }
+/* ---------- critter drawings (shared with the Serengeti page) ---------- */
+let preyCut = 1;
+const lerp = (a, b, x) => a + (b - a) * Math.max(0, Math.min(1, x));
+function hash(s){ let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619); return () => ((h = Math.imul(h ^ (h >>> 15), 2246822507) ^ Math.imul(h ^ (h >>> 13), 3266489909)) >>> 0) / 4294967296; }
+const PRED = ["Saber-tooth","Gorilla","Lion","Wolf","Weasel","Tiger","Jackal"];
+function species(t){
+  const pred = t.core >= 4 || t.net >= 0.85;
+  if (pred){
+    if (t.fang >= 0.9 && t.net >= 0.97 && t.core >= 5) return "Saber-tooth";
+    if (t.ato >= 0.85 && t.efg >= 0.85 && t.net >= 0.85) return "Gorilla";
+    if (t.reb >= 0.8 && t.paint >= 0.75) return "Lion";
+    if (t.press >= 0.7 && t.fb >= 0.6) return "Wolf";
+    if ((t.press >= 0.7 || t.stl >= 0.75) && t.reb < 0.6) return "Weasel";
+    if (t.core >= 5) return "Tiger";
+    return "Jackal";
   }
-  return [...map.values()].map(p => {
-    p.games.sort((a,b) => a.week - b.week);
-    const s = p.games.filter(g => g.snap_pct !== null);
-    p.avgSnap = s.length ? s.reduce((t,g) => t + g.snap_pct, 0) / s.length : 0;
-    return p;
+  if (t.prey >= preyCut) return t.ato < 0.4 ? "Rabbit" : "Goat";
+  if (t.prey >= 0.6) return t.ato < 0.4 ? "Hare" : "Ram";
+  return "Blob";
+}
+function predator(t, sp, flip){
+  const cx = 150, cy = 172, id = "g" + Math.abs(t.n.split("").reduce((a, c) => a * 31 + c.charCodeAt(0) | 0, 7));
+  const P = {"Saber-tooth":{W:96,R:86,chin:.95},"Gorilla":{W:104,R:84,chin:.55},"Lion":{W:90,R:84,chin:.85},"Wolf":{W:76,R:88,chin:1.0},
+             "Weasel":{W:60,R:94,chin:1.05},"Tiger":{W:96,R:86,chin:.85},"Jackal":{W:72,R:84,chin:1.0}}[sp];
+  const W = P.W, R = P.R;
+  const base = shade(t.col, -0.12), deep = shade(t.col, -0.62), hi = shade(t.col, 0.25), ink = "#0b0a09";
+  const face = sp === "Gorilla" ? shade(t.col, 0.45) : sp === "Lion" ? "#d9b26a" : shade(t.col, 0.38);
+  const iris = {"Weasel":"#ef4444","Gorilla":"#f97316","Wolf":"#facc15","Jackal":"#facc15"}[sp] || "#fbbf24";
+  let s = `<defs><radialGradient id="${id}h" cx="50%" cy="38%" r="65%"><stop offset="0" stop-color="${hi}"/><stop offset=".7" stop-color="${base}"/><stop offset="1" stop-color="${deep}"/></radialGradient>
+    <filter id="${id}glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+  // speed lines (fast break)
+  if (t.fb > 0.55){ const k = Math.round((t.fb - 0.5) * 10); for (let i = 0; i < k; i++){ const y = cy - 46 + i * 20; s += `<path d="M${cx - W - 18 - (i % 2) * 8} ${y} h-${34 + (i * 7) % 20}" stroke="${deep}" stroke-width="4" stroke-linecap="round" opacity=".5"/>`; } }
+  // lion mane (glass + paint)
+  if (sp === "Lion"){ const n = 26, r1 = R * 1.18, r2 = R * (1.48 + 0.18 * t.reb); let d = "";
+    for (let i = 0; i < n * 2; i++){ const a = i / (n * 2) * 2 * Math.PI - Math.PI / 2, r = i % 2 ? r1 : r2 * (0.92 + 0.08 * Math.sin(i * 1.7));
+      d += (i ? "L" : "M") + (cx + Math.cos(a) * r * 1.02).toFixed(1) + " " + (cy + 6 + Math.sin(a) * r).toFixed(1); }
+    s += `<path d="${d}Z" fill="${shade(t.col, -0.45)}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/>`; }
+  // gorilla crest
+  if (sp === "Gorilla") s += `<path d="M${cx - 40} ${cy - R + 14} Q ${cx} ${cy - R - 34} ${cx + 40} ${cy - R + 14} Z" fill="${deep}" stroke="${ink}" stroke-width="3"/>`;
+  // ears
+  const torn = t.ato < 0.4;
+  [-1, 1].forEach(dd => {
+    let e;
+    if (sp === "Wolf" || sp === "Jackal"){ const bx = cx + dd * W * 0.55, by = cy - R * 0.62; e = `<path d="M${bx - dd * 4} ${by + 20} L${bx + dd * 30} ${by - 58} L${bx + dd * 40} ${by + 14} Z" fill="${base}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/><path d="M${bx + dd * 10} ${by + 10} L${bx + dd * 29} ${by - 38} L${bx + dd * 32} ${by + 8} Z" fill="${deep}"/>`; }
+    else if (sp === "Weasel"){ e = `<circle cx="${cx + dd * W * 0.8}" cy="${cy - R * 0.62}" r="14" fill="${base}" stroke="${ink}" stroke-width="3"/><circle cx="${cx + dd * W * 0.8}" cy="${cy - R * 0.62}" r="7" fill="${deep}"/>`; }
+    else if (sp === "Gorilla"){ e = `<ellipse cx="${cx + dd * (W + 4)}" cy="${cy - 6}" rx="12" ry="18" fill="${base}" stroke="${ink}" stroke-width="3"/>`; }
+    else { const bx = cx + dd * W * 0.66, by = cy - R * 0.72; e = `<path d="M${bx - dd * 26} ${by + 22} L ${bx + dd * 10} ${by - 52} L ${bx + dd * 34} ${by + 14} Z" fill="${base}" stroke="${ink}" stroke-width="3" stroke-linejoin="round"/><path d="M${bx - dd * 10} ${by + 12} L ${bx + dd * 10} ${by - 32} L ${bx + dd * 22} ${by + 10} Z" fill="${deep}"/>`; }
+    if (torn && sp !== "Gorilla") e += `<path d="M${cx + dd * W * 0.7} ${cy - R * 0.98} l${dd * 8} 10 l${dd * -10} 6" fill="#f6efe2" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    s += e;
   });
+  // head: angular shield with V chin
+  const top = cy - R * 0.98, tY = cy - R * 0.5, ckY = cy + R * 0.08, jY = cy + R * 0.66, ch = cy + R * P.chin;
+  s += `<path d="M${cx} ${top} C ${cx + W * 0.55} ${top} ${cx + W * 0.9} ${tY - 18} ${cx + W * 0.92} ${tY} L ${cx + W} ${ckY} L ${cx + W * 0.66} ${jY} Q ${cx + W * 0.3} ${ch} ${cx} ${ch} Q ${cx - W * 0.3} ${ch} ${cx - W * 0.66} ${jY} L ${cx - W} ${ckY} L ${cx - W * 0.92} ${tY} C ${cx - W * 0.9} ${tY - 18} ${cx - W * 0.55} ${top} ${cx} ${top} Z" fill="url(#${id}h)" stroke="${ink}" stroke-width="4" stroke-linejoin="round"/>`;
+  // cheek fur (ORBTV)
+  if (t.orbtv > 0.55 && sp !== "Gorilla"){ const k = 2 + Math.round((t.orbtv - 0.55) * 8);
+    [-1, 1].forEach(dd => { for (let i = 0; i < k; i++){ const y = ckY - 4 + i * 12, x = cx + dd * (W - 6 - i * 5); s += `<path d="M${x} ${y - 8} L${x + dd * 18} ${y + 2} L${x - dd * 2} ${y + 6}" fill="${base}" stroke="${ink}" stroke-width="2.5" stroke-linejoin="round"/>`; } }); }
+  // stripes (apex traits) for cats
+  if (sp === "Tiger" || sp === "Saber-tooth"){ const k = Math.max(2, t.core);
+    for (let i = 0; i < k; i++){ const dd = i % 2 ? 1 : -1, row = Math.floor(i / 2);
+      s += `<path d="M${cx + dd * (W - 4)} ${tY + 14 + row * 20} l${-dd * 28} ${6} l${dd * 10} ${8} l${-dd * 22} ${4}" fill="none" stroke="${ink}" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" opacity=".85"/>`; }
+    s += `<path d="M${cx} ${top + 6} l-9 22 l9 -6 l9 6 Z" fill="${ink}" opacity=".85"/><path d="M${cx - 22} ${top + 14} l6 22 M${cx + 22} ${top + 14} l-6 22" stroke="${ink}" stroke-width="5" stroke-linecap="round" opacity=".8"/>`; }
+  // face mask / muzzle
+  const mY = cy + R * 0.34, mW = sp === "Gorilla" ? W * 0.62 : sp === "Weasel" ? W * 0.5 : W * 0.56, mH = sp === "Wolf" || sp === "Weasel" || sp === "Jackal" ? R * 0.5 : R * 0.42;
+  s += `<path d="M${cx - mW} ${mY - mH * 0.5} Q ${cx} ${mY - mH * 0.95} ${cx + mW} ${mY - mH * 0.5} Q ${cx + mW * 1.05} ${mY + mH * 0.7} ${cx} ${mY + mH} Q ${cx - mW * 1.05} ${mY + mH * 0.7} ${cx - mW} ${mY - mH * 0.5} Z" fill="${face}" stroke="${ink}" stroke-width="3"/>`;
+  // eyes: angled, glowing, close-set (paint pulls closer)
+  const ex = lerp(40, 26, t.paint) * (sp === "Gorilla" ? 1.15 : 1), ey = cy - R * 0.2;
+  [-1, 1].forEach(dd => {
+    const x = cx + dd * ex, ix = x - dd * 15, ox = x + dd * 17;
+    if (sp === "Gorilla") s += `<ellipse cx="${x}" cy="${ey + 2}" rx="20" ry="14" fill="${ink}" opacity=".55"/>`;
+    s += `<path d="M${ix} ${ey + 4} Q ${x} ${ey - 9} ${ox} ${ey - 6} Q ${x + dd * 4} ${ey + 11} ${ix} ${ey + 4} Z" fill="${iris}" filter="url(#${id}glow)" stroke="${ink}" stroke-width="2.5"/>`;
+    s += `<ellipse cx="${x + dd * 1}" cy="${ey + 1}" rx="${sp === "Gorilla" ? 4 : 2.2}" ry="${sp === "Gorilla" ? 4 : 7}" fill="${ink}"/>`;
+    // heavy angry brow (disruption makes it heavier)
+    const bw = lerp(6, 11, t.hkm) + (sp === "Gorilla" ? 6 : 0);
+    s += `<path d="M${ix - dd * 6} ${ey + 2} L${ox + dd * 6} ${ey - 16} L${ox + dd * 4} ${ey - 16 - bw} L${ix - dd * 8} ${ey - 6 - bw * 0.4} Z" fill="${ink}"/>`;
+  });
+  if (sp === "Gorilla") s += `<path d="M${cx - ex - 24} ${ey - 16} Q ${cx} ${ey - 34} ${cx + ex + 24} ${ey - 16}" fill="none" stroke="${ink}" stroke-width="9" stroke-linecap="round"/>`;
+  // nose + snarl wrinkles
+  const nY = mY - mH * 0.42;
+  if (sp === "Gorilla"){ s += `<ellipse cx="${cx}" cy="${nY + 6}" rx="24" ry="13" fill="${deep}" stroke="${ink}" stroke-width="2.5"/><ellipse cx="${cx - 9}" cy="${nY + 8}" rx="6" ry="4" fill="${ink}"/><ellipse cx="${cx + 9}" cy="${nY + 8}" rx="6" ry="4" fill="${ink}"/>`; }
+  else { s += `<path d="M${cx - 13} ${nY} L${cx + 13} ${nY} L${cx} ${nY + 13} Z" fill="${ink}"/>`;
+    [-1, 1].forEach(dd => { for (let i = 0; i < 3; i++) s += `<path d="M${cx + dd * (4 + i * 5)} ${nY - 8 - i * 7} q ${dd * 6} -4 ${dd * 12} 0" fill="none" stroke="${ink}" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>`; }); }
+  // snarling open mouth
+  const oY = mY + mH * 0.28, oW = mW * 0.78, oH = 16 + 14 * t.fang;
+  s += `<path d="M${cx - oW} ${oY} Q ${cx} ${oY - 10} ${cx + oW} ${oY} Q ${cx + oW * 0.7} ${oY + oH} ${cx} ${oY + oH + 4} Q ${cx - oW * 0.7} ${oY + oH} ${cx - oW} ${oY} Z" fill="#3b0a0a" stroke="${ink}" stroke-width="3"/>`;
+  s += `<path d="M${cx - oW + 4} ${oY + 1} Q ${cx} ${oY - 7} ${cx + oW - 4} ${oY + 1} L ${cx + oW - 8} ${oY + 6} Q ${cx} ${oY - 1} ${cx - oW + 8} ${oY + 6} Z" fill="#b91c1c"/>`;
+  const nT = 7; for (let i = 0; i < nT; i++){ const x = cx - oW * 0.8 + i * (oW * 1.6 / (nT - 1)); s += `<path d="M${x - 4} ${oY + 3} L${x} ${oY + 11} L${x + 4} ${oY + 3} Z" fill="#fffaf0" stroke="${ink}" stroke-width="1.2"/>`; }
+  for (let i = 0; i < 5; i++){ const x = cx - oW * 0.5 + i * (oW / 4); s += `<path d="M${x - 4} ${oY + oH} L${x} ${oY + oH - 9} L${x + 4} ${oY + oH} Z" fill="#fffaf0" stroke="${ink}" stroke-width="1.2"/>`; }
+  // fangs: kill-shot runs; saber-tooths get the giant pair
+  const fl = sp === "Saber-tooth" ? 52 + 22 * t.fang : 10 + 22 * Math.pow(t.fang, 1.3), fw = sp === "Saber-tooth" ? 8 : 5;
+  [-1, 1].forEach(dd => { const x = cx + dd * oW * 0.62; s += `<path d="M${x - fw} ${oY + 2} Q ${x - dd * 2} ${oY + fl * 0.6} ${x + dd * 2} ${oY + fl} Q ${x + fw * 0.4} ${oY + fl * 0.5} ${x + fw} ${oY + 2} Z" fill="#fffaf0" stroke="${ink}" stroke-width="2"/>`; });
+  // flat teeth allowed runs: predators show a chipped tooth instead
+  if (t.flat > 0.65) s += `<path d="M${cx - 2} ${oY + 3} l4 0 l-1 6 l-2 -2 Z" fill="${ink}"/>`;
+  return `<svg viewBox="0 0 300 330" role="img" aria-label="${t.n} drawn as a ${sp}"><g ${flip ? `transform="translate(300 0) scale(-1 1)"` : ""}>${s}</g></svg>`;
 }
 
-/* ---------- math ---------- */
-function quant(sorted, q){ if(!sorted.length) return 0; const pos = (sorted.length-1)*q, lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi]-sorted[lo])*(pos-lo); }
-function fmt(x, d = 1){ return Number.isInteger(x) ? String(x) : x.toFixed(d); }
-function clears(v, line){ return Number.isInteger(line) ? v >= line : v > line; }
-function lineText(line){ return Number.isInteger(line) ? `${line}+` : `over ${fmt(line)}`; }
-function binW(stat, vmax){ return YDS.has(stat) ? (vmax > 120 ? 10 : 5) : (PCT.has(stat) ? 5 : 1); }
-
-function compute(){
-  const stat = $("stat").value;
-  const lineRaw = $("line").value.trim(), line = lineRaw === "" ? null : parseFloat(lineRaw);
-  const minSnap = parseFloat($("minSnap").value) || 0;
-  const minGames = parseInt($("minGames").value) || 1;
-  const maxDuds = $("maxDuds").value.trim() === "" ? null : parseInt($("maxDuds").value);
-  const lastN = parseInt($("lastN").value) || 0;
-  const dropSnap = parseFloat($("dropSnap").value) || 0;
-  const term = $("search").value.trim().toLowerCase();
-  const out = [];
-  for(const p of players){
-    if(positions.size && !positions.has(p.pos)) continue;
-    if(teams.size && !teams.has(p.team)) continue;
-    if(term && !p.name.toLowerCase().includes(term)) continue;
-    let games = p.games.filter(g => g.snap_pct === null || g.snap_pct >= dropSnap);
-    if(lastN) games = games.slice(-lastN);
-    if(games.length < minGames) continue;
-    const snapG = games.filter(g => g.snap_pct !== null);
-    const avgSnap = snapG.length ? snapG.reduce((t,g) => t + g.snap_pct, 0) / snapG.length : 0;
-    if(avgSnap < minSnap) continue;
-    const vals = games.map(g => g[stat] || 0);
-    const sorted = [...vals].sort((a,b) => a - b);
-    const avg = vals.reduce((s,v) => s + v, 0) / vals.length;
-    const duds = vals.filter(v => v < avg / 2).length;
-    if(maxDuds !== null && duds > maxDuds) continue;
-    const recent = vals.slice(-3), before = vals.slice(0, -3);
-    const trend = before.length >= 2 ? recent.reduce((s,v)=>s+v,0)/recent.length - before.reduce((s,v)=>s+v,0)/before.length : null;
-    const tg = games.reduce((s,g) => s + (g.targets || 0), 0), rc = games.reduce((s,g) => s + (g.receptions || 0), 0);
-    const hits = line === null ? null : vals.filter(v => clears(v, line)).length;
-    out.push({p, vals, sorted, avg, duds, n: vals.length, avgSnap, trend,
-      med: quant(sorted,.5), p10: quant(sorted,.1), p90: quant(sorted,.9),
-      ratio: avg > 0 ? quant(sorted,.1) / avg : 0, catchPct: tg ? rc / tg * 100 : null,
-      hit: hits === null ? null : hits / vals.length, hits, games});
+function shade(hex, f){ const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  const m = f > 0 ? 255 : 0, k = Math.abs(f); r = Math.round(r + (m - r) * k); g = Math.round(g + (m - g) * k); b = Math.round(b + (m - b) * k);
+  return `rgb(${r},${g},${b})`; }
+function lum(hex){ const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; }
+function creature(t, flip){
+  const sp0 = species(t); if (PRED.includes(sp0)) return predator(t, sp0, flip);
+  const rnd = hash(t.n), sp = sp0, apex = t.core / 6;
+  const cx = 150, cy = 178, R = 84;
+  const fur = shade(t.col, 0.18), dark = shade(t.col, -0.45), light = shade(t.col, 0.62);
+  const stripe = lum(t.col) < 0.4 ? shade(t.col, 0.72) : shade(t.col, -0.6);
+  let s = "";
+  // speed lines (fast break)
+  if (t.fb > 0.55){ const k = Math.round((t.fb - 0.5) * 10); for (let i = 0; i < k; i++){ const y = cy - 40 + i * 22; s += `<path d="M${cx - R - 14 - i % 2 * 10} ${y} h-${30 + rnd() * 25}" stroke="${dark}" stroke-width="4" stroke-linecap="round" opacity=".45"/>`; } }
+  // horns (losing the glass)
+  if (t.reb < 0.42){ const h = (0.42 - t.reb) / 0.42, w = 6 + 9 * h;
+    [-1, 1].forEach(d => { s += `<path d="M${cx + d * 30} ${cy - R + 18} C ${cx + d * (60 + 40 * h)} ${cy - R - 40 * h - 20}, ${cx + d * (110 + 30 * h)} ${cy - R + 10}, ${cx + d * (86 + 20 * h)} ${cy - R + 40 + 20 * h}" fill="none" stroke="#cdbf9f" stroke-width="${w}" stroke-linecap="round"/>`; }); }
+  // ears (A/TO)
+  const e = 1 - t.ato, eh = lerp(34, 130, Math.pow(e, 1.6)), rabbit = e > 0.6;
+  [-1, 1].forEach(d => {
+    const bx = cx + d * 46, by = cy - R + 22, ang = d * lerp(12, 26, e);
+    if (rabbit){
+      s += `<g transform="rotate(${ang} ${bx} ${by})"><ellipse cx="${bx}" cy="${by - eh / 2}" rx="${lerp(18, 22, e)}" ry="${eh / 2 + 6}" fill="${fur}" stroke="${dark}" stroke-width="3"/><ellipse cx="${bx}" cy="${by - eh / 2 + 4}" rx="${lerp(8, 11, e)}" ry="${eh / 2 - 8}" fill="${light}" opacity=".85"/></g>`;
+    } else {
+      s += `<g transform="rotate(${ang} ${bx} ${by})"><path d="M${bx - 26} ${by + 10} L${bx} ${by - eh} L${bx + 26} ${by + 10} Z" fill="${fur}" stroke="${dark}" stroke-width="3" stroke-linejoin="round"/><path d="M${bx - 13} ${by + 4} L${bx} ${by - eh + 22} L${bx + 13} ${by + 4} Z" fill="${light}" opacity=".8"/></g>`;
+    }
+  });
+  // head: superellipse that squares up with apex traits, wobbly when unformed
+  const n = lerp(2.05, 3.1, apex), wob = lerp(0.07, 0.015, apex), ph = rnd() * 6.28, ph2 = rnd() * 6.28;
+  let pts = [];
+  for (let i = 0; i < 72; i++){
+    const a = i / 72 * 2 * Math.PI, c = Math.cos(a), si = Math.sin(a);
+    let r = R / Math.pow(Math.pow(Math.abs(c), n) + Math.pow(Math.abs(si), n), 1 / n);
+    r *= 1 + wob * Math.sin(3 * a + ph) + wob * 0.6 * Math.sin(5 * a + ph2);
+    const cheek = Math.exp(-Math.pow((Math.abs(a - Math.PI / 2 - 0.0) > Math.PI ? 0 : Math.abs(Math.abs(c) - 0.85)) * 4, 2)) * (si > 0 ? 1 : 0.3);
+    r *= 1 + 0.08 * t.orbtv * cheek;
+    pts.push([cx + c * r * 1.06, cy + si * r * lerp(0.98, 0.9, apex)]);
   }
-  const key = $("sort").value, eff = key === "hit" && line === null ? "avg" : key;
-  const by = {hit:r => -r.hit, ratio:r => -r.ratio, p10:r => -r.p10, avg:r => -r.avg, duds:r => r.duds / r.n,
-    trend:r => r.trend === null ? Infinity : -r.trend, catch:r => r.catchPct === null ? Infinity : -r.catchPct};
-  out.sort((a,b) => by[eff](a) - by[eff](b) || b.avg - a.avg);
-  return {out, line, stat, eff};
-}
-
-/* ---------- visuals ---------- */
-function colorFor(v, line){ return line === null ? "var(--dot)" : (clears(v, line) ? "var(--hit)" : "var(--miss)"); }
-function strip(r, line){
-  const max = Math.max(r.sorted[r.sorted.length-1], line || 0, 1), W = 300, H = 30, pad = 4, x = v => pad + v / max * (W - pad*2);
-  let s = `<svg class="strip" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Game by game distribution">`;
-  s += `<line x1="${pad}" x2="${W-pad}" y1="${H-4}" y2="${H-4}" stroke="var(--rule)"/>`;
-  s += `<line x1="${x(r.avg)}" x2="${x(r.avg)}" y1="2" y2="${H-4}" stroke="var(--muted)" stroke-dasharray="2 2"/>`;
-  if(line !== null) s += `<line x1="${x(line)}" x2="${x(line)}" y1="0" y2="${H}" stroke="var(--court)" stroke-width="2"/>`;
-  r.vals.forEach((v,i) => s += `<circle cx="${x(v)}" cy="${6 + (i*7919)%17}" r="3" fill="${colorFor(v,line)}" fill-opacity=".85"/>`);
-  return s + "</svg>";
-}
-function curve(r, line, stat){
-  const W = 300, H = 92, pad = 6, base = H - 8;
-  const vmax = Math.max(r.sorted[r.sorted.length-1], line || 0, r.avg * 1.6, 1), w = binW(stat, vmax);
-  const x = v => pad + v / vmax * (W - pad*2), bin = v => Math.round(v / w) * w;
-  const counts = {}; let maxStack = 1;
-  r.sorted.forEach(v => { const k = bin(v); counts[k] = (counts[k]||0) + 1; maxStack = Math.max(maxStack, counts[k]); });
-  const dr = Math.min(4, (base - 6) / (maxStack * 2.2));
-  let s = `<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Games stacked by total against an ideal bell curve">`;
-  s += `<line x1="${pad}" x2="${W-pad}" y1="${base}" y2="${base}" stroke="var(--rule)"/>`;
-  const mu = r.avg, sd = Math.max(mu * 0.12, w * 0.5), peak = Math.min(maxStack * dr * 2.2 * 1.3, base - 2), pts = [];
-  for(let i = 0; i <= 150; i++){ const v = i/150*vmax; pts.push(`${x(v).toFixed(1)},${(base - Math.exp(-0.5*((v-mu)/sd)**2)*peak).toFixed(1)}`); }
-  s += `<polyline points="${pts.join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  if(line !== null) s += `<line x1="${x(line)}" x2="${x(line)}" y1="2" y2="${base}" stroke="var(--court)" stroke-width="2"/>`;
-  const seen = {};
-  r.sorted.forEach(v => { const k = bin(v), i = seen[k] = (seen[k]||0) + 1;
-    s += `<circle cx="${x(k).toFixed(1)}" cy="${(base - dr - 1 - (i-1)*dr*2.2).toFixed(1)}" r="${dr.toFixed(1)}" fill="${colorFor(v,line)}"/>`; });
-  return s + "</svg>";
-}
-function ring(r, line){
-  const S = 190, c = S/2, inner = 14, outer = c - 8, n = r.vals.length, slots = Math.max(17, n);
-  const vmax = Math.max(r.sorted[r.sorted.length-1], line || 0, 1), rad = v => inner + v / vmax * (outer - inner);
-  const pts = r.vals.map((v,i) => { const a = -Math.PI/2 + 2*Math.PI*i/slots; return [c + rad(v)*Math.cos(a), c + rad(v)*Math.sin(a), v]; });
-  const ptStr = pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
-  let s = `<svg class="ring" viewBox="0 0 ${S} ${S}" role="img" aria-label="Each game around a 17-game season clock, farther out for higher totals">`;
-  if(n >= slots * 0.9) s += `<polygon points="${ptStr}" fill="var(--chip)" stroke="var(--muted)" stroke-opacity=".6"/>`;
-  else if(n >= 2) s += `<polyline points="${ptStr}" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-opacity=".7"/>`;
-  if(line !== null) s += `<circle cx="${c}" cy="${c}" r="${rad(line).toFixed(1)}" fill="none" stroke="var(--court)" stroke-width="1.5" stroke-opacity=".75"/>`;
-  s += `<circle cx="${c}" cy="${c}" r="${rad(r.avg).toFixed(1)}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  pts.forEach(p => s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="${colorFor(p[2],line)}"/>`);
-  return s + "</svg>";
-}
-function shapeScore(r, stat){
-  const vmax = Math.max(r.sorted[r.sorted.length-1], 1), w = binW(stat, vmax);
-  const mu = r.avg, sd = Math.max(mu * 0.12, w * 0.5), counts = {};
-  r.vals.forEach(v => { const k = Math.round(v / w) * w; counts[k] = (counts[k]||0) + 1; });
-  let o = 0; for(const k in counts){ const pdf = Math.exp(-0.5*((k-mu)/sd)**2)/(sd*Math.sqrt(2*Math.PI)) * w; o += Math.min(counts[k]/r.n, pdf); }
-  return Math.round(o * 100);
-}
-function roundness(r){ if(r.avg <= 0) return 0; const sd = Math.sqrt(r.vals.reduce((s,v) => s + (v-r.avg)**2, 0) / r.n); return Math.max(0, Math.round((1 - sd/r.avg) * 100)); }
-function ladder(r, stat){
-  const span = r.p90 - r.p10, step = YDS.has(stat) ? (r.p90 > 150 ? 25 : r.p90 > 60 ? 10 : 5) : PCT.has(stat) ? 10 : (span > 8 ? 2 : 1);
-  const start = Math.max(0, Math.floor(r.p10 / step) * step), end = Math.ceil(r.p90 / step) * step + step;
-  let rows = "";
-  for(let t = start; t <= end; t += step){
-    const lv = YDS.has(stat) ? t - 0.5 : t + 0.5, h = r.vals.filter(v => v > lv).length;
-    rows += `<tr><td>Over ${fmt(lv)}</td><td class="num"><b>${Math.round(h / r.n * 100)}%</b></td><td>${h} of ${r.n}</td></tr>`;
+  s += `<path d="M${pts.map(p => p.map(v => v.toFixed(1)).join(" ")).join(" L")} Z" fill="${fur}" stroke="${dark}" stroke-width="4" stroke-linejoin="round"/>`;
+  // cheek fur (ORBTV)
+  if (t.orbtv > 0.55){ const k = Math.round((t.orbtv - 0.45) * 8);
+    [-1, 1].forEach(d => { for (let i = 0; i < k; i++){ const y = cy + 10 + i * 12, x = cx + d * (R * 1.04 - 2);
+      s += `<path d="M${x} ${y - 8} L${x + d * (16 + i % 2 * 6)} ${y} L${x} ${y + 6}" fill="${fur}" stroke="${dark}" stroke-width="3" stroke-linejoin="round"/>`; } }); }
+  // stripes (apex traits)
+  const st = Math.max(0, t.core - 2) * 2;
+  for (let i = 0; i < st; i++){
+    const side = i % 2 ? 1 : -1, row = Math.floor(i / 2);
+    if (row === 0){ s += `<path d="M${cx + side * 6} ${cy - R + 12} q ${side * 8} 18 0 34" fill="none" stroke="${stripe}" stroke-width="6" stroke-linecap="round" opacity=".75"/>`; continue; }
+    const y = cy - 6 + row * 16, x = cx + side * (R * 1.02 - 6);
+    s += `<path d="M${x} ${y} q ${-side * 22} 2 ${-side * 34} ${10 - row * 2}" fill="none" stroke="${stripe}" stroke-width="6" stroke-linecap="round" opacity=".75"/>`;
   }
-  return `<div class="ladder"><table>${rows}</table></div>`;
+  // muzzle (rim attacks)
+  const my = cy + 34, mry = lerp(20, 32, t.rim);
+  s += `<ellipse cx="${cx}" cy="${my}" rx="${lerp(36, 42, t.rim)}" ry="${mry}" fill="${light}" stroke="${dark}" stroke-width="2.5" opacity=".95"/>`;
+  s += `<path d="M${cx - 11} ${my - mry + 8} Q ${cx} ${my - mry + 2} ${cx + 11} ${my - mry + 8} Q ${cx} ${my - mry + 22} ${cx - 11} ${my - mry + 8} Z" fill="${dark}"/>`;
+  // mouth + teeth
+  const mouthY = my + mry * 0.45;
+  s += `<path d="M${cx - 26} ${mouthY - 4} Q ${cx} ${mouthY + 8} ${cx + 26} ${mouthY - 4}" fill="none" stroke="${dark}" stroke-width="3" stroke-linecap="round"/>`;
+  if (sp === "Rabbit" || sp === "Hare"){
+    s += `<rect x="${cx - 11}" y="${mouthY}" width="10" height="${lerp(12, 20, 1 - t.ato)}" rx="2" fill="#fff" stroke="${dark}" stroke-width="2"/><rect x="${cx + 1}" y="${mouthY}" width="10" height="${lerp(12, 20, 1 - t.ato)}" rx="2" fill="#fff" stroke="${dark}" stroke-width="2"/>`;
+  } else {
+    const flat = Math.round(t.flat * 5);
+    for (let i = 0; i < flat; i++){ const x = cx - flat * 4 + i * 8; s += `<rect x="${x}" y="${mouthY + 1}" width="7" height="8" rx="1" fill="#fff" stroke="${dark}" stroke-width="1.5"/>`; }
+  }
+  const fl = 3 + 28 * Math.pow(t.fang, 1.4);
+  if (t.fang > 0.3) [-1, 1].forEach(d => { const x = cx + d * 17; s += `<path d="M${x - 5} ${mouthY - 1} L${x} ${mouthY + fl} L${x + 5} ${mouthY - 1} Z" fill="#fff" stroke="${dark}" stroke-width="2" stroke-linejoin="round"/>`; });
+  // eyes (paint edge): high = forward and close, low = wide to the sides
+  const p = t.paint, ex = lerp(64, 24, p), ey = cy - 18 - (1 - p) * 4, er = 14;
+  [-1, 1].forEach(d => {
+    const x = cx + d * ex;
+    s += `<ellipse cx="${x}" cy="${ey}" rx="${er}" ry="${er * 0.92}" fill="#fffdf5" stroke="${dark}" stroke-width="3"/>`;
+    const look = d * (1 - p) * 5;
+    if (t.core >= 4) s += `<ellipse cx="${x + look}" cy="${ey}" rx="3" ry="10" fill="#141210"/>`;
+    else if (t.prey >= 0.6) s += `<rect x="${x + look - 8}" y="${ey - 2.5}" width="16" height="5" rx="2.5" fill="#141210"/>`;
+    else s += `<circle cx="${x + look}" cy="${ey}" r="5.5" fill="#141210"/>`;
+    s += `<circle cx="${x + look + 3}" cy="${ey - 4}" r="2" fill="#fff"/>`;
+    // brow (disruption)
+    const tilt = lerp(-6, 14, t.hkm);
+    s += `<path d="M${x - d * 16} ${ey - er - 6 + tilt} L${x + d * 14} ${ey - er - 6 - tilt * 0.3}" stroke="${dark}" stroke-width="${lerp(3, 6, t.hkm)}" stroke-linecap="round"/>`;
+  });
+  return `<svg viewBox="0 0 300 330" role="img" aria-label="${t.n} drawn as a ${sp}"><g ${flip ? `transform="translate(300 0) scale(-1 1)"` : ""}>${s}</g></svg>`;
 }
 
-/* ---------- render ---------- */
+species = t => t.sp;   /* species now come from the daily data job */
+
+const $ = id => document.getElementById(id);
+const PIL = ["Ball Security", "Pressure", "Glass", "Inside Attack"];
+let S = null, TM = {}, L = null, MV = null, view = "bet";
+const pct = v => v == null ? "–" : Math.round(v * 100) + "%";
+const short = id => (TM[id] && TM[id].short) || "";
+const nm = (id, g) => TM[id] ? TM[id].short : (g.home === id ? g.home_name : g.away_name);
+function blobSvg(col){
+  return `<svg viewBox="0 0 300 330"><path d="M150 70 C 230 66 262 130 250 196 C 240 262 190 286 146 282 C 92 278 46 250 44 186 C 42 120 82 74 150 70 Z" fill="${col}" stroke="#0b0a09" stroke-width="6"/><circle cx="118" cy="168" r="14" fill="#fffdf5" stroke="#0b0a09" stroke-width="4"/><circle cx="182" cy="168" r="14" fill="#fffdf5" stroke="#0b0a09" stroke-width="4"/><circle cx="118" cy="170" r="5" fill="#141210"/><circle cx="182" cy="170" r="5" fill="#141210"/></svg>`;
+}
+function icon(id, flip){
+  const t = TM[id];
+  if(!t) return `<div class="ic">${blobSvg("#9a9387")}</div>`;
+  const c = t.critter;
+  const svg = c ? creature({n: t.name, col: t.color, ...c}, flip) : blobSvg(t.color);
+  return `<div><div class="ic">${svg}</div><div class="sp">${c ? c.sp : "Blob"}</div></div>`;
+}
+function stageOf(id){ return TM[id] ? TM[id].stage : "too early"; }
+function analyze(g){
+  const r = {tier: null, flags: [], level: "too early"};
+  if(!g.fav){
+    [g.home, g.away].forEach(t => ((TM[t] || {}).injuries || []).filter(i => i.top2 && i.fresh).forEach(i => r.flags.push(["warn", `${short(t)} without ${i.player} (${i.ppg} ppg)`])));
+    return r;
+  }
+  const F = TM[g.fav], D = TM[g.dog];
+  const sf = stageOf(g.fav), sd = stageOf(g.dog);
+  r.level = sf === "scored" && sd === "scored" ? "scored" : (sf !== "too early" && sd !== "too early") ? "early" : "too early";
+  if(r.level !== "too early"){
+    r.tier = PIL.filter(p => F.pillars[p] != null && D.pillars[p] != null && F.pillars[p] - D.pillars[p] >= 0.5).length;
+    r.preyEdges = PIL.filter(p => F.pillars[p] != null && D.pillars[p] != null && D.pillars[p] - F.pillars[p] >= 0.5).length;
+  }
+  // injuries work from day one
+  const wound = (t, side) => ((TM[t] || {}).injuries || []).filter(i => i.top2 && i.fresh);
+  wound(g.dog).forEach(i => r.flags.push(["bet", `Wounded prey: ${short(g.dog)} without ${i.player} (${i.ppg} ppg)`]));
+  wound(g.fav).forEach(i => r.flags.push(["bad", `Favorite wounded: ${i.player} out`]));
+  if(r.level === "scored"){
+    if(D.pillars.Glass - F.pillars.Glass >= 1) r.flags.push(["warn", "Dog wins the glass"]);
+    if(F.ato < 1) r.flags.push(["warn", `${short(g.fav)} A/TO under 1.0`]);
+    if(F.efg_z != null && D.efg_z != null && F.efg_z - D.efg_z >= 1 && r.tier <= 1) r.flags.push(["warn", "Edge is mostly shooting"]);
+    const fs = PIL.reduce((s, p) => s + (F.pillars[p] || 0), 0), ds = PIL.reduce((s, p) => s + (D.pillars[p] || 0), 0);
+    if(ds - fs >= 1.5) r.flags.push(["info", `System flip: ${short(g.dog)} looks like the predator`]);
+  }
+  if(g.ml_win != null && Math.abs(g.ml_win - g.spread_win) >= 0.05) r.flags.push(["info", `Moneyline and spread disagree (${pct(g.ml_win)} vs ${pct(g.spread_win)})`]);
+  return r;
+}
+function bars(g){
+  const F = TM[g.fav], D = TM[g.dog]; if(!F || !D) return "";
+  const b = (v, col) => { if(v == null) return `<div class="bar"><em></em></div>`; const x = Math.max(-2.5, Math.min(2.5, v)) / 5;
+    return `<div class="bar"><em></em><i style="background:${col};left:${x < 0 ? (50 + x * 100) : 50}%;width:${Math.abs(x) * 100}%"></i></div>`; };
+  const gap = p => { if(F.pillars[p] == null || D.pillars[p] == null) return `<span class="gap">–</span>`;
+    const d = F.pillars[p] - D.pillars[p], col = d >= 0.5 ? "var(--fav)" : d <= -0.5 ? "var(--dog)" : "var(--muted)";
+    return `<span class="gap" style="color:${col};font-weight:${Math.abs(d) >= 0.5 ? 700 : 400}">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}</span>`; };
+  return `<div class="pill"><span></span><span style="color:var(--fav)">${F.short}</span><span style="color:var(--dog)">${D.short}</span><span class="gap">gap</span></div>` +
+    PIL.map(p => `<div class="pill"><span>${p}</span>${b(F.pillars[p], "var(--fav)")}${b(D.pillars[p], "var(--dog)")}${gap(p)}</div>`).join("") +
+    `<div class="lc">Gap = favorite minus underdog. Blue counts toward the favorite's tier, orange is a real underdog edge, gray is too small to count.</div>` +
+    `<div class="lc">Records ${F.record} vs ${D.record} · ORBTV/100 ${F.orbtv} vs ${D.orbtv} · A/TO ${F.ato} vs ${D.ato}</div>`;
+}
+function card(g){
+  const a = analyze(g);
+  if(!g.fav){
+    const a0 = analyze(g), pv = S && g.day && g.day !== S.date ? `<span class="prev">preview</span>` : "";
+    return `<div class="game faded"><div class="duo">${icon(g.away, false)}<div class="mu">${g.away_name}<br><span class="dog">at ${g.home_name}</span>${pv}</div>${icon(g.home, true)}</div><div class="lc">No line posted yet</div>${a0.flags.length ? `<div class="flags">${a0.flags.map(([k, t]) => `<span class="f ${k}">${t}</span>`).join("")}</div>` : ""}</div>`;
+  }
+  const tier = a.level === "too early" ? `<span class="tier early">too early</span>` :
+    `<span class="tier${a.level === "early" ? " early" : ""}">${a.tier}/4${a.preyEdges ? ` · dog ${a.preyEdges}` : ""}${a.level === "early" ? " early" : ""}</span>`;
+  const preview = S && g.day && g.day !== S.date ? `<span class="prev">preview</span>` : "";
+  return `<div class="game${a.level === "scored" ? "" : " faded"}">
+   <div class="top"><div class="duo">${icon(g.fav, false)}<div class="mu"><span class="fav">${nm(g.fav, g)} -${g.line}</span><br><span class="dog">vs ${nm(g.dog, g)}</span>${preview}</div>${icon(g.dog, true)}</div>${tier}</div>
+   <div class="lc">Spread says <b>${pct(g.spread_win)}</b> to win${g.ml_win != null ? ` · book moneyline ${pct(g.ml_win)}` : ""}${g.neutral ? " · neutral" : ""}</div>
+   ${a.flags.length ? `<div class="flags">${a.flags.map(([k, t]) => `<span class="f ${k}">${t}</span>`).join("")}</div>` : ""}
+   <details><summary>Pillars and exchange check</summary>${a.level === "too early" ? `<div class="lc">Pillars show once both teams have 2 games.</div>` : bars(g)}
+    <div class="xp"><label for="x${g.id}">Exchange price for ${nm(g.fav, g)} to win</label><input id="x${g.id}" inputmode="decimal" placeholder="e.g. 90" data-sw="${g.spread_win}"><span id="o${g.id}"></span></div>
+   </details></div>`;
+}
+function sortGames(gs){
+  const rank = g => { const a = analyze(g); return [a.level === "scored" ? 0 : a.level === "early" ? 1 : 2, -(a.tier || 0), a.preyEdges || 0, g.line || 99]; };
+  return [...gs].sort((x, y) => { const a = rank(x), b = rank(y); for(let i = 0; i < 4; i++) if(a[i] !== b[i]) return a[i] - b[i]; return 0; });
+}
 function render(){
-  if(view === "scan") return renderScan();
-  savePrefs();
-  const {out, line, stat, eff} = compute();
-  const label = $("stat").selectedOptions[0].textContent;
-  $("summary").textContent = `${out.length} players` + (line === null ? `. Type a line at the top to see hit rates.` : ` for ${label} ${lineText(line)}.`) + (eff !== $("sort").value ? " Sorted by average." : "");
-  $("list").innerHTML = out.slice(0, shown).map(r => {
-    const big = r.hit === null ? "–" : Math.round(r.hit * 100) + "%", sub = r.hit === null ? "Add a line" : `${r.hits} of ${r.n}`;
-    const tr = r.trend === null ? "" : `<span class="${r.trend > 0 ? "pos" : r.trend < 0 ? "neg" : ""}">Trend<b>${r.trend > 0 ? "+" : ""}${fmt(r.trend)}</b></span>`;
-    const cp = r.catchPct === null || r.p.pos === "QB" ? "" : `<span>Catch<b>${Math.round(r.catchPct)}%</b></span>`;
-    const extra = view === "curve" ? `<span>Shape<b>${shapeScore(r, stat)}</b></span>` : view === "ring" ? `<span>Roundness<b>${roundness(r)}</b></span>` : "";
-    const vis = view === "curve" ? curve(r, line, stat) : view === "ring" ? ring(r, line) : strip(r, line);
-    return `<div class="row" tabindex="0">
-      <div class="rhead"><div><div class="name">${r.p.name}</div><div class="team">${r.p.pos}, ${r.p.team}, ${Math.round(r.avgSnap)}% snaps</div></div>
-      <div class="big num">${big}<small>${sub}</small></div></div>
-      <div class="stats"><span>Avg<b>${fmt(r.avg)}</b></span><span>Med<b>${fmt(r.med)}</b></span><span>10th<b>${fmt(r.p10)}</b></span>
-      <span>Ratio<b>${r.ratio.toFixed(2)}</b></span><span class="dud">Duds<b>${r.duds}</b></span><span>Games<b>${r.n}</b></span>${tr}${cp}${extra}</div>
-      ${vis}${ladder(r, stat)}</div>`;
-  }).join("") || `<div class="empty"><h2>No players match</h2><p>Lower the snap % or games filter, raise max dud games, or clear positions and teams.</p></div>`;
-  $("more").hidden = out.length <= shown;
-}
-/* ---------- bulk scan ---------- */
-const SCAN = {
-  QB: ["passing_yards","passing_tds","rushing_yards","carries"],
-  RB: ["rushing_yards","carries","rush_rec_yds","receptions","targets","rz_carries","snap_pct"],
-  WR: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"],
-  TE: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"]
-};
-const MINAVG = {passing_yards:100, passing_tds:0.5, rushing_yards:15, carries:3, rush_rec_yds:20, receptions:1.5,
-  targets:2, receiving_yards:15, rz_targets:0.3, rz_carries:0.3, target_share:5, snap_pct:0};
-const mean = a => a.reduce((s,v) => s + v, 0) / a.length;
-function statLabel(k){ const o = $("stat").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; }
-
-function renderScan(){
-  savePrefs();
-  const type = $("scanType").value;
-  const minSnap = parseFloat($("minSnap").value) || 0, minGames = parseInt($("minGames").value) || 1;
-  const lastN = parseInt($("lastN").value) || 0, dropSnap = parseFloat($("dropSnap").value) || 0;
-  const term = $("search").value.trim().toLowerCase();
-  const pool = [];
-  for(const p of players){
-    if(!SCAN[p.pos]) continue;
-    if(positions.size && !positions.has(p.pos)) continue;
-    if(teams.size && !teams.has(p.team)) continue;
-    if(term && !p.name.toLowerCase().includes(term)) continue;
-    let games = p.games.filter(g => g.snap_pct === null || g.snap_pct >= dropSnap);
-    if(lastN) games = games.slice(-lastN);
-    if(games.length < Math.max(minGames, type === "last3" ? 4 : 1)) continue;
-    const sg = games.filter(g => g.snap_pct !== null);
-    const avgSnap = sg.length ? mean(sg.map(g => g.snap_pct)) : 0;
-    if(avgSnap < minSnap) continue;
-    pool.push({p, games});
+  const v = $("view");
+  if(!S){ v.innerHTML = `<div class="empty">No slate yet.</div>`; return; }
+  const games = S.games.filter(g => g.state !== "post" && (!g.day || g.day === S.date));
+  const all = S.games.filter(g => g.state !== "post");
+  if(view === "up"){
+    v.innerHTML = `<input class="search" id="uq" placeholder="Find a team's next game" autocomplete="off"><div id="ul"></div>`;
+    const draw = () => { const q = $("uq").value.trim().toLowerCase();
+      const days = [...new Set(all.map(g => g.day))].sort();
+      $("ul").innerHTML = days.map(d => { let gs = sortGames(all.filter(g => g.day === d));
+        if(q) gs = gs.filter(g => (g.home_name + " " + g.away_name).toLowerCase().includes(q));
+        if(!gs.length) return "";
+        const lab = new Date(d + "T12:00:00").toLocaleDateString(undefined, {weekday: "long", month: "short", day: "numeric"});
+        return `<div class="day">${d === S.date ? "Today, " : ""}${lab}</div>` + gs.map(card).join(""); }).join("") || `<div class="empty">No games in the next 3 days${q ? " for that team" : ""}.</div>`; };
+    $("uq").addEventListener("input", draw); draw(); return;
   }
-  const posAvg = {};
-  if(type === "pos"){
-    const acc = {};
-    for(const it of pool) for(const st of SCAN[it.p.pos]){
-      const k = it.p.pos + "|" + st; acc[k] = acc[k] || [0,0];
-      it.games.forEach(g => { acc[k][0] += g[st] || 0; acc[k][1]++; });
-    }
-    for(const k in acc) posAvg[k] = acc[k][0] / acc[k][1];
+  if(view === "bet"){
+    v.innerHTML = `<div class="legend">Sorted by pillar dominance (favorite ahead by 0.5+ in each of 4 pillars), then fewest underdog edges, then by spread. Faded cards are early: fewer than 5 games for one team.</div>` +
+      (sortGames(games).map(card).join("") || `<div class="empty">No games left today.</div>`);
+  } else if(view === "line"){
+    const gs = all.filter(g => g.fav).sort((a, b) => Math.abs((b.ml_win ?? b.spread_win) - b.spread_win) - Math.abs((a.ml_win ?? a.spread_win) - a.spread_win) || a.line - b.line);
+    v.innerHTML = `<div class="legend">What each spread implies about the favorite's chance to win. Type an exchange price to see the gap. A -25 favorite should be about 99%.</div>` +
+      gs.map(g => `<div class="game"><div class="top"><div class="mu"><span class="fav">${nm(g.fav, g)} -${g.line}</span> <span class="dog">vs ${nm(g.dog, g)}</span></div></div>
+        <div class="lc">Spread implies <b>${pct(g.spread_win)}</b>${g.ml_win != null ? ` · book moneyline <b>${pct(g.ml_win)}</b>` : ""}</div>
+        <div class="xp"><label for="x${g.id}">Exchange price</label><input id="x${g.id}" inputmode="decimal" placeholder="e.g. 90" data-sw="${g.spread_win}"><span id="o${g.id}"></span></div></div>`).join("");
+  } else if(view === "teams"){
+    v.innerHTML = `<input class="search" id="q" placeholder="Search a team" autocomplete="off"><div id="tl"></div>`;
+    const draw = () => { const q = $("q").value.trim().toLowerCase();
+      const list = Object.values(TM).filter(t => !q || t.name.toLowerCase().includes(q)).sort((a, b) => b.games - a.games || a.name.localeCompare(b.name)).slice(0, 40);
+      $("tl").innerHTML = list.map(t => `<div class="game${t.stage === "scored" ? "" : " faded"}"><div class="top"><div class="duo">${icon(Object.keys(TM).find(k => TM[k] === t), false)}<div class="mu">${t.name}</div></div><span class="tier${t.stage === "scored" ? "" : " early"}">${t.record} · ${t.stage}</span></div>
+        <div class="lc">${t.critter ? `${t.critter.sp}, ${t.critter.core}/6 apex traits` : "Blob until 5 games"}${t.fin_n ? ` · finisher ${t.fin_n ? Math.round(t.fin * 100) + "% of " + t.fin_n + " big leads" : ""}` : ""} · last 5: ${t.last5 || "–"} · avg margin ${t.margin} · A/TO ${t.ato} · ORBTV/100 ${t.orbtv}${t.big_win ? " · has a 15+ win" : ""}</div>
+        ${t.stage !== "too early" ? PIL.map(p => `<div class="pill" style="grid-template-columns:7.5em 1fr 3em"><span>${p}</span><div class="bar"><em></em>${t.pillars[p] == null ? "" : `<i style="background:var(--fav);left:${t.pillars[p] < 0 ? 50 + Math.max(-2.5, t.pillars[p]) / 5 * 100 : 50}%;width:${Math.min(2.5, Math.abs(t.pillars[p])) / 5 * 100}%"></i>`}</div><span>${t.pillars[p] == null ? "–" : t.pillars[p].toFixed(1)}</span></div>`).join("") : ""}
+        ${(t.injuries || []).map(i => `<div class="lc">🩹 ${i.player}: ${i.status} (${i.date})${i.top2 ? ", top-2 scorer" : ""}</div>`).join("")}</div>`).join(""); };
+    $("q").addEventListener("input", draw); draw();
+  } else {
+    const M = (MV && MV.movers) || [];
+    v.innerHTML = `<div class="legend">Teams whose critter changed since about a week ago, whose last 5 games moved a pillar by 0.75+, or who won 4 of their last 5. <b>Real shift</b> = winning with better pillars. <b>Hot streak</b> = winning without them, often shooting.</div>` +
+      (M.map(m => `<div class="game"><div class="top"><div class="duo">${icon(m.team, false)}<div class="mu">${m.name}<br><span class="dog">${m.then && m.then !== m.now ? `${m.then} → ${m.now}` : m.now} · last 5: ${m.last5}</span></div></div>${m.label ? `<span class="tier${m.label.startsWith("Real") ? "" : " early"}">${m.label}</span>` : ""}</div>
+        ${Object.keys(m.jumps).length ? `<div class="flags">${Object.entries(m.jumps).map(([p, d]) => `<span class="f ${d > 0 ? "bet" : "bad"}">${p} ${d > 0 ? "+" : ""}${d.toFixed(1)}</span>`).join("")}</div>` : ""}</div>`).join("") ||
+      `<div class="empty">No movers yet. This fills in once teams reach 5 games and there's a week of daily snapshots to compare against.</div>`);
   }
-  const res = [];
-  for(const it of pool) for(const st of SCAN[it.p.pos]){
-    const vals = it.games.map(g => g[st] || 0), avg = mean(vals);
-    if(avg < MINAVG[st] || avg <= 0) continue;
-    let k, den, bench, recentAvg = null, score;
-    if(type === "last3"){
-      const rec = vals.slice(-3); bench = avg; k = rec.filter(v => v > avg).length; den = 3;
-      recentAvg = mean(rec); score = k * 1000 + (recentAvg - avg) / avg * 100;
-    }else if(type === "season"){
-      bench = avg; k = vals.filter(v => v > avg).length; den = vals.length; score = k / den * 1000 + den;
-    }else{
-      bench = posAvg[it.p.pos + "|" + st]; if(!bench) continue;
-      k = vals.filter(v => v > bench).length; den = vals.length; score = k / den * 1000 + avg / bench;
-    }
-    res.push({p: it.p, st, vals, sorted: [...vals].sort((a,b) => a - b), avg, bench, k, den, recentAvg, score});
-  }
-  res.sort((a,b) => b.score - a.score);
-  const desc = {last3: "last 3 above his avg", season: "games above his avg", pos: "games above position avg"}[type];
-  $("summary").textContent = `${res.length} player and stat combos scanned. Showing the top ${Math.min(res.length, shown)}.`;
-  $("list").innerHTML = res.slice(0, shown).map((r, i) => {
-    const diff = type === "last3" ? r.recentAvg - r.avg : r.avg - r.bench;
-    return `<div class="row" tabindex="0">
-      <div class="rhead"><div><div class="name">${i + 1}. ${r.p.name}</div><div class="team">${r.p.pos}, ${r.p.team}, ${statLabel(r.st)}</div></div>
-      <div class="big num">${r.k}/${r.den}<small>${desc}</small></div></div>
-      <div class="stats"><span>His avg<b>${fmt(r.avg)}</b></span>
-      ${type === "last3" ? `<span>Last 3 avg<b>${fmt(r.recentAvg)}</b></span>` : type === "pos" ? `<span>Pos avg<b>${fmt(r.bench)}</b></span>` : ""}
-      ${type !== "season" ? `<span class="${diff >= 0 ? "pos" : "neg"}">Diff<b>${diff >= 0 ? "+" : ""}${fmt(diff)}</b></span>` : ""}<span>Games<b>${r.vals.length}</b></span></div>
-      ${strip(r, r.bench)}</div>`;
-  }).join("") || `<div class="empty"><h2>Nothing to scan</h2><p>Loosen the snap %, games, position, or team filters.</p></div>`;
-  $("more").hidden = res.length <= shown;
 }
-
-function renderTeams(){
-  const all = [...new Set(players.map(p => p.team).filter(Boolean))].sort();
-  for(const t of [...teams]) if(!all.includes(t)) teams.delete(t);
-  $("teams").innerHTML = all.map(t => `<button type="button" data-team="${t}" aria-pressed="${teams.has(t)}">${t}</button>`).join("");
-}
-function syncChips(){
-  document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
-  $("scanbar").hidden = view !== "scan";
-  $("stat").disabled = $("line").disabled = view === "scan";
-  document.querySelectorAll("#positions button").forEach(b => b.setAttribute("aria-pressed", positions.has(b.dataset.pos)));
-}
-function useText(text, info){
-  const rows = parseCSV(text);
-  if(!rows.length || !("receptions" in rows[0])){ alert("That file doesn’t look like the nfl_weekly CSV."); return; }
-  players = build(rows);
-  $("season").textContent = info ? `${info.season} season, through week ${info.through_week}` : "Loaded from file";
-  $("empty").hidden = true; $("results").hidden = false;
-  renderTeams(); shown = 60; render();
-}
-
-/* ---------- events ---------- */
-INPUTS.forEach(id => $(id).addEventListener("input", () => { shown = 60; render(); }));
-$("toggle").onclick = () => $("toggle").setAttribute("aria-expanded", $("filters").classList.toggle("open"));
-$("more").onclick = () => { shown += 60; render(); };
-document.querySelectorAll(".views button").forEach(b => b.onclick = () => { view = b.dataset.view; syncChips(); if(players.length) render(); });
-$("positions").addEventListener("click", e => { const b = e.target.closest("button[data-pos]"); if(!b) return;
-  positions.has(b.dataset.pos) ? positions.delete(b.dataset.pos) : positions.add(b.dataset.pos); syncChips(); shown = 60; render(); });
-$("teams").addEventListener("click", e => { const b = e.target.closest("button[data-team]"); if(!b) return;
-  const t = b.dataset.team; teams.has(t) ? teams.delete(t) : teams.add(t); b.setAttribute("aria-pressed", teams.has(t)); shown = 60; render(); });
-$("clearTeams").onclick = () => { teams.clear(); renderTeams(); shown = 60; render(); };
-$("list").addEventListener("click", e => { const row = e.target.closest(".row"); if(row) row.classList.toggle("open"); });
-$("list").addEventListener("keydown", e => { if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("row")){ e.preventDefault(); e.target.classList.toggle("open"); } });
-$("file").onchange = e => { const f = e.target.files[0]; if(!f) return; const rd = new FileReader(); rd.onload = () => useText(rd.result, null); rd.readAsText(f); e.target.value = ""; };
-
-/* ---------- start: auto-load latest data ---------- */
-loadPrefs(); syncChips();
-fetch("data/latest.json", {cache: "no-store"})
-  .then(r => { if(!r.ok) throw 0; return r.json(); })
-  .then(info => fetch("data/" + info.file, {cache: "no-store"}).then(r => { if(!r.ok) throw 0; return r.text(); }).then(t => useText(t, info)))
-  .catch(() => { $("season").textContent = ""; $("empty").hidden = false; });
+document.addEventListener("input", e => {
+  const el = e.target; if(!el.dataset || !el.dataset.sw) return;
+  const out = $("o" + el.id.slice(1)), x = parseFloat(el.value), sw = parseFloat(el.dataset.sw);
+  if(!out) return; if(isNaN(x)){ out.textContent = ""; return; }
+  const p = x > 1 ? x / 100 : x, gap = sw - p;
+  out.innerHTML = `<b style="color:${gap >= 0.03 ? "var(--good)" : gap <= -0.03 ? "var(--bad)" : "var(--muted)"}">${gap >= 0 ? "+" : ""}${Math.round(gap * 100)} pts ${gap >= 0.03 ? "cheap" : gap <= -0.03 ? "pricey" : "fair"}</b>`;
+});
+document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => { view = b.dataset.v; document.querySelectorAll("[data-v]").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); });
+(async () => {
+  try{
+    /* Read data straight from the repo, so a slow GitHub Pages rebuild never leaves the board a day behind */
+    const m = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/").filter(Boolean)[0];
+    const base = m && repo ? `https://raw.githubusercontent.com/${m[1]}/${repo}/main/data/` : "data/";
+    const load = f => fetch(base + f + ".json?t=" + Date.now(), {cache: "no-store"}).then(r => r.json());
+    let s, t, l;
+    try{ [s, t, l] = await Promise.all(["slate", "teams", "latest"].map(load)); }
+    catch(e){ [s, t, l] = await Promise.all(["slate", "teams", "latest"].map(f => fetch(`data/${f}.json`, {cache: "no-store"}).then(r => r.json()))); }
+    S = s; TM = t.teams || {}; L = l;
+    try{ MV = await load("movers"); }catch(e){ MV = null; }
+    const n = Object.values(TM).filter(x => x.stage === "scored").length;
+    $("sub").textContent = `${S.date} · ${S.games.filter(g => !g.day || g.day === S.date).length} games today · ${n} teams with 5+ games`;
+    $("status").innerHTML = "Data: " + Object.entries(L.status || {}).map(([k, v]) => `${k} ${v}`).join(" · ") + `<br>Updated ${new Date(L.updated).toLocaleString()}`;
+  }catch(e){ $("sub").textContent = "Couldn't load data. Run the workflow once from the Actions tab."; }
+  render();
 })();
 </script>
 </body>
