@@ -6,7 +6,8 @@ counts red zone targets and carries, joins snap share, and writes:
     data/nfl_weekly_<season>.csv
     data/latest.json   (tells the screener which file to load)
 
-Runs on GitHub Actions; also works anywhere with Python 3 (no pip installs).
+Runs on GitHub Actions; also works anywhere with Python 3. Prop prices need `pip install propline`
+and a PROPLINE_KEY environment variable; without them the rest still runs.
 Usage:  python fetch_nfl.py          # current season
         python fetch_nfl.py 2025     # a past season
 """
@@ -64,6 +65,78 @@ def name_key(name):
     n = re.sub(r"[^a-z ]", "", n.lower())
     n = re.sub(r"\b(jr|sr|ii|iii|iv|v)\b", "", n)
     return " ".join(n.split())
+
+
+# ---------------------------------------------------------------- prop prices (PropLine)
+PROP_MARKETS = {"player_anytime_td": ("total_tds", 1), "player_2plus_td": ("total_tds", 2), "player_receptions": ("receptions", None),
+                "player_reception_yds": ("receiving_yards", None), "player_rush_yds": ("rushing_yards", None),
+                "player_rush_attempts": ("carries", None), "player_rush_reception_yds": ("rush_rec_yds", None),
+                "player_pass_yds": ("passing_yards", None), "player_pass_tds": ("passing_tds", None)}
+
+
+def implied(a):
+    a = float(a)
+    return 100 / (a + 100) if a > 0 else -a / (-a + 100)
+
+
+def fetch_props():
+    """Prices for games in the next 4 days from Novig, DraftKings and FanDuel. Needs the PROPLINE_KEY secret."""
+    key = os.environ.get("PROPLINE_KEY")
+    if not key:
+        return 0
+    from propline import PropLine
+    client = PropLine(key)
+    now = dt.datetime.now(dt.timezone.utc)
+    evs = client.get_events("football_nfl")
+    evs = evs.get("data", evs) if isinstance(evs, dict) else evs
+    rows = []
+    for e in evs or []:
+        try:
+            t = dt.datetime.fromisoformat(str(e.get("commence_time")).replace("Z", "+00:00"))
+        except Exception:
+            continue
+        if not (now - dt.timedelta(hours=3) <= t <= now + dt.timedelta(days=4)):
+            continue
+        odds = client.get_odds("football_nfl", event_id=e["id"], markets=list(PROP_MARKETS), bookmakers=["novig", "draftkings", "fanduel"])
+        games = odds.get("data", odds) if isinstance(odds, dict) else odds
+        for g in (games if isinstance(games, list) else [games]):
+            for b in g.get("bookmakers", []):
+                for m in b.get("markets", []):
+                    stat, fixed = PROP_MARKETS.get(m.get("key"), (None, None))
+                    if not stat:
+                        continue
+                    outs = m.get("outcomes", [])
+                    for o in outs:
+                        price, name = o.get("price"), str(o.get("name", ""))
+                        player = o.get("description") or name
+                        if price is None or not player:
+                            continue
+                        fair = None
+                        if name == "Under":
+                            continue
+                        if name == "Over":
+                            if o.get("point") is None:
+                                continue
+                            at_least = int(float(o["point"]) + 0.5)      # over 0.5 TDs = 1 or more
+                            under = next((u for u in outs if u.get("name") == "Under" and u.get("description") == player
+                                          and u.get("point") == o.get("point")), None)
+                            p = implied(price)
+                            if under and under.get("price") is not None:
+                                fair = p / (p + implied(under["price"]))
+                        elif fixed:                                      # yes/no TD markets list the player as the outcome
+                            at_least, p = fixed, implied(price)
+                        else:
+                            mt = re.match(r"\s*(\d+)\+", name)         # ladders like '60+ Yards'
+                            if not mt:
+                                continue
+                            at_least, p = int(mt.group(1)), implied(price)
+                        rows.append({"player": player, "stat": stat, "at_least": at_least, "book": b.get("key"), "price": price,
+                                     "prob": round(p, 3), "fair": None if fair is None else round(fair, 3), "liquidity": o.get("liquidity"),
+                                     "game": f"{g.get('away_team', '')} at {g.get('home_team', '')}", "kickoff": e.get("commence_time")})
+    os.makedirs(OUT_DIR, exist_ok=True)
+    with open(os.path.join(OUT_DIR, "props.json"), "w") as f:
+        json.dump({"updated": now.isoformat(timespec="seconds"), "props": rows}, f, separators=(",", ":"))
+    return len(rows)
 
 
 def main():
@@ -127,6 +200,34 @@ def main():
     if not rows:
         sys.exit("No rows found. nflverse may not have published this season yet.")
 
+    # nflverse only lists a player in a week if he recorded a stat. Add zero rows
+    # for games he played (offensive snaps) but didn't record anything, so hit
+    # rates aren't inflated by silently skipping his empty games.
+    n_stat_rows = len(rows)
+    known = {}
+    have = set()
+    for o in rows:
+        known[(name_key(o["player"]), o["team"])] = o
+        have.add((o["player_id"], o["week"]))
+    zero_fields = [f for f in FIELDS if f not in ("player_id", "player", "position", "team",
+                                                  "opponent", "week", "game_id", "snaps", "snap_pct")]
+    added = 0
+    for s in download(URLS["snaps"]):
+        if s.get("game_type") != "REG" or num(s["offense_snaps"]) <= 0:
+            continue
+        base = known.get((name_key(s["player"]), s["team"]))
+        if not base or (base["player_id"], int(s["week"])) in have:
+            continue
+        z = {f: 0 for f in zero_fields}
+        z.update({"player_id": base["player_id"], "player": base["player"], "position": base["position"],
+                  "team": s["team"], "opponent": s.get("opponent", ""), "week": int(s["week"]),
+                  "game_id": s.get("game_id", ""), "snaps": num(s["offense_snaps"]),
+                  "snap_pct": round(num(s["offense_pct"]) * 100, 1)})
+        rows.append(z)
+        have.add((base["player_id"], z["week"]))
+        added += 1
+    print(f"Added {added} games where a player was on the field but recorded no stats")
+
     rows.sort(key=lambda x: (x["player"], x["week"]))
     os.makedirs(OUT_DIR, exist_ok=True)
     fname = f"nfl_weekly_{SEASON}.csv"
@@ -136,12 +237,17 @@ def main():
         w.writerows(rows)
 
     max_week = max(r["week"] for r in rows)
+    try:
+        n = fetch_props()
+        print(f"Props: {n} prices saved")
+    except Exception as e:
+        print(f"Couldn't load prop prices: {e}")
     with open(os.path.join(OUT_DIR, "latest.json"), "w") as f:
         json.dump({"season": SEASON, "file": fname, "through_week": max_week,
                    "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}, f)
 
     print(f"Saved {len(rows)} player-games through week {max_week} to data/{fname}")
-    print(f"Snap counts matched for {matched / len(rows):.0%} of rows")
+    print(f"Snap counts matched for {matched / n_stat_rows:.0%} of stat rows")
 
 
 if __name__ == "__main__":

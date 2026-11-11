@@ -3,59 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NBA Floor Screener</title>
+<title>NFL Floor Screener</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#EDF0F4; --surface:#FFFFFF; --ink:#15202B; --muted:#5B6878; --rule:#D6DCE4;
-  --court:#1D3A8A; --hit:#1F8A4C; --miss:#C8372D; --dot:#8796A8; --chip:#E3E8EF;
-  color-scheme:light;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
+  --court:#1D3A8A; --hit:#E07B1F; --miss:#3F6FC4; --dot:#8796A8; --chip:#E3E8EF; --up:#1F8A4C; --down:#C8372D;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#0F1620; --surface:#17212E; --ink:#E6ECF2; --muted:#93A1B2; --rule:#273444;
-    --court:#7D9BF7; --hit:#43C07A; --miss:#F06A5E; --dot:#6C7C90; --chip:#22303F;
+    --court:#7D9BF7; --hit:#F5933A; --miss:#6F95D6; --dot:#6C7C90; --chip:#22303F; --up:#43C07A; --down:#F06A5E;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#0F1620; --surface:#17212E; --ink:#E6ECF2; --muted:#93A1B2; --rule:#273444;
-  --court:#7D9BF7; --hit:#43C07A; --miss:#F06A5E; --dot:#6C7C90; --chip:#22303F;
+  --court:#7D9BF7; --hit:#F5933A; --miss:#6F95D6; --dot:#6C7C90; --chip:#22303F; --up:#43C07A; --down:#F06A5E;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.45 "Barlow",system-ui,sans-serif}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.num,h1,.big,select,input,button{font-family:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
+.num,h1,.big,select,input,button,.filebtn{font-family:"Barlow Condensed","Arial Narrow",system-ui,sans-serif}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--rule);padding:10px 14px;max-height:calc(100vh - env(safe-area-inset-top,0px));max-height:calc(100dvh - env(safe-area-inset-top,0px));overflow-y:auto;overscroll-behavior:contain}
-[hidden]{display:none !important}   /* .cbox and .opts set their own display, which otherwise beats the hidden attribute */
+[hidden]{display:none !important}
 .opts{display:block;margin:8px 0 0;font:600 13px Barlow,sans-serif;background:none;border:1px solid var(--rule);border-radius:999px;padding:4px 12px;color:inherit}
+.cbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:8px;margin:8px 0 4px}
+.cbox label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.cbox input,.cbox select{font:500 15px Barlow,sans-serif;padding:7px;border-radius:8px;border:1px solid var(--rule);background:transparent;color:inherit}
+.cline{font-size:13.5px;margin-top:4px}
+.thin{font:600 12px Barlow,sans-serif;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--down) 15%,transparent);color:var(--down);margin-left:4px}
 .toprow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
-h1{margin:0;font-size:24px;font-weight:700;letter-spacing:.01em}
-.season{color:var(--muted);font-size:14px}
+h1{margin:0;font-size:24px;font-weight:700}
+.season{color:var(--muted);font-size:13px;text-align:right}
 .bar{display:flex;gap:8px;margin-top:8px;align-items:center}
 select,input{font-size:17px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid transparent;border-radius:8px;padding:7px 9px;min-width:0}
 select:focus-visible,input:focus-visible,button:focus-visible{outline:2px solid var(--court);outline-offset:1px}
-#stat{flex:1.3}
+#stat{flex:1.4}
 #line{flex:1;width:0}
 button{font-size:16px;font-weight:600;border-radius:8px;padding:7px 12px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
-button.primary{background:var(--court);border-color:var(--court);color:var(--surface)}
-.filebtn{position:relative;display:inline-block;overflow:hidden;font:600 16px "Barlow Condensed",sans-serif;border-radius:8px;padding:9px 14px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);cursor:pointer}
-.filebtn.primary{background:var(--court);border-color:var(--court);color:var(--surface)}
-.fileinput{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
-.filebtn:focus-within{outline:2px solid var(--court);outline-offset:1px}
-#filters{display:none;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chips button{padding:4px 9px;font-size:14px;min-width:46px}
+.views{display:flex;gap:6px;margin-top:8px}
+.views button{flex:1;padding:5px 8px;font-size:15px}
+button[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--surface)}
+#filters{display:none;grid-template-columns:1fr 1fr;gap:10px 12px;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule);max-height:60vh;overflow-y:auto}
 #filters.open{display:grid}
 #filters label{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--muted)}
-#filters label.check{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:14px}
-#filters input[type=checkbox]{width:20px;height:20px;accent-color:var(--court)}
 .wide{grid-column:1/-1}
+.subhead{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
+.subhead button{padding:3px 10px;font-size:14px}
+.filebtn{position:relative;display:inline-block;overflow:hidden;font-size:16px;font-weight:600;border-radius:8px;padding:9px 14px;background:var(--court);color:var(--surface);cursor:pointer}
+.filebtn input{position:absolute;inset:0;opacity:0;font-size:100px;cursor:pointer}
 main{max-width:760px;margin:0 auto;padding:6px 10px 40px}
 .empty{background:var(--surface);border-radius:12px;padding:22px 18px;margin-top:14px}
 .empty h2{margin:0 0 6px;font:700 22px "Barlow Condensed",sans-serif}
@@ -70,16 +75,9 @@ main{max-width:760px;margin:0 auto;padding:6px 10px 40px}
 .big small{display:block;font:500 12px "Barlow",sans-serif;color:var(--muted);margin-top:2px}
 .stats{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px;font-size:13px;color:var(--muted)}
 .stats b{font:600 15px "Barlow Condensed",sans-serif;color:var(--ink);margin-left:3px}
-.duds b{color:var(--miss)}
+.stats .dud b,.stats .neg b{color:var(--down)}
+.stats .pos b{color:var(--up)}
 svg.strip{display:block;width:100%;height:30px;margin-top:6px}
-.views{display:flex;gap:6px;margin-top:8px}
-.views button{flex:1;padding:5px 8px;font-size:15px}
-.views button[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--surface)}
-.teamhead{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)}
-.teamhead button{padding:3px 10px;font-size:14px}
-.teams{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.teams button{padding:4px 9px;font-size:14px;min-width:48px}
-.teams button[aria-pressed="true"]{background:var(--court);border-color:var(--court);color:var(--surface)}
 svg.curve{display:block;width:100%;height:auto;margin-top:6px}
 svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
 .ladder{display:none;margin-top:8px;border-top:1px solid var(--rule);padding-top:8px;overflow-x:auto}
@@ -88,35 +86,29 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
 .ladder td{padding:3px 10px 3px 0;white-space:nowrap}
 .ladder td:first-child{color:var(--muted)}
 .more{display:block;margin:12px auto}
-.trend{font:600 15px "Barlow Condensed",sans-serif;margin-top:6px}
-.cbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(9.5em,1fr));gap:8px;margin:8px 0 4px}
-.cbox label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:3px}
-.cbox input,.cbox select{font:500 15px Barlow,sans-serif;padding:7px;border-radius:8px;border:1px solid var(--rule);background:var(--card,transparent);color:inherit}
-.cline{font-size:13.5px;margin-top:4px}
-.tag{display:inline-block;font:600 12px "Barlow",sans-serif;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:1px}
-.tag.role{background:color-mix(in srgb,var(--hit) 18%,transparent);color:var(--hit)}
-.tag.eff{background:color-mix(in srgb,var(--miss) 15%,transparent);color:var(--miss)}
-.tag.mins{background:var(--chip);color:var(--muted)}
-.note{color:var(--muted);font-size:13px;margin:4px 4px 0}
-@media (prefers-reduced-motion:no-preference){.row{transition:background .15s}}
+.note{color:var(--muted);font-size:13px;margin:0}
 </style>
 </head>
 <body>
 <header>
-  <div class="toprow"><h1>NBA Floor Screener</h1><span class="season" id="season"></span></div>
+  <div class="toprow"><h1>NFL Floor Screener</h1><span class="season" id="season">Loading…</span></div>
   <div class="bar">
     <select id="stat" aria-label="Stat">
-      <option value="PTS">Points</option>
-      <option value="REB">Rebounds</option>
-      <option value="AST">Assists</option>
-      <option value="FG3M">Threes made</option>
-      <option value="FG3A">Three-point attempts</option>
-      <option value="PRA">Pts + Reb + Ast</option>
-      <option value="PR">Pts + Reb</option>
-      <option value="PA">Pts + Ast</option>
-      <option value="RA">Reb + Ast</option>
+      <option value="receptions">Receptions</option>
+      <option value="targets">Targets</option>
+      <option value="receiving_yards">Receiving yards</option>
+      <option value="rushing_yards">Rushing yards</option>
+      <option value="carries">Rush attempts</option>
+      <option value="rush_rec_yds">Rush + rec yards</option>
+      <option value="passing_yards">Passing yards</option>
+      <option value="passing_tds">Passing TDs</option>
+      <option value="total_tds">Anytime TD (rush + rec)</option>
+      <option value="rz_targets">Red zone targets</option>
+      <option value="rz_carries">Red zone carries</option>
+      <option value="snap_pct">Snap %</option>
+      <option value="target_share">Target share %</option>
     </select>
-    <input id="line" type="number" inputmode="decimal" step="0.5" placeholder="Line, e.g. 19.5 or 6" aria-label="Prop line">
+    <input id="line" type="number" inputmode="decimal" step="0.5" placeholder="Line, e.g. 4.5 or 1" aria-label="Prop line">
     <button id="toggle" aria-expanded="false" aria-controls="filters">Filters</button>
   </div>
   <div class="views" role="group" aria-label="Card view">
@@ -124,69 +116,63 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
     <button data-view="curve" aria-pressed="false">Curve</button>
     <button data-view="ring" aria-pressed="false">Ring</button>
     <button data-view="scan" aria-pressed="false">Scan</button>
-    <button data-view="custom" aria-pressed="false">Custom</button>
     <button data-view="prices" aria-pressed="false">Prices</button>
   </div>
   <button class="opts" id="optsToggle" type="button" aria-expanded="true" hidden>Hide options</button>
-  <div class="cbox" id="custombar" hidden>
-    <label>Stat <select id="cStat"><option>PRA</option><option>PTS</option><option>REB</option><option>AST</option><option value="FG3M">Threes made</option><option value="FG3A">3PA</option><option>PR</option><option>PA</option><option>RA</option></select></label>
-    <label>Avg from <input id="cMin" inputmode="decimal" placeholder="15"></label>
-    <label>to <input id="cMax" inputmode="decimal" placeholder="20"></label>
-    <label>Max duds <input id="cDuds" inputmode="numeric" placeholder="1"></label>
-    <label>Min 3PA <input id="c3pa" inputmode="decimal" placeholder="any"></label>
-    <label>Min games <input id="cGames" inputmode="numeric" placeholder="4"></label>
-    <label>Team role <select id="cRole"><option value="any">Any</option><option value="2-5">2nd to 5th scorer</option><option value="3-6">3rd to 6th scorer</option></select></label>
-  </div>
   <div class="cbox" id="pricebar" hidden>
     <label>Price from % <input id="pLo" inputmode="numeric" placeholder="20"></label>
     <label>to % <input id="pHi" inputmode="numeric" placeholder="80"></label>
     <label>Min gap (pts) <input id="pGap" inputmode="numeric" placeholder="10"></label>
-    <label>Min games <input id="pGames" inputmode="numeric" placeholder="5"></label>
+    <label>Min games <input id="pGames" inputmode="numeric" placeholder="4"></label>
+    <label>Sort by <select id="pSort"><option value="hit">Hit rate</option><option value="gap">Gap vs price</option></select></label>
   </div>
   <div class="bar" id="scanbar" hidden>
-    <select id="scanMode" aria-label="Scan mode" style="flex:1">
-      <option value="rising">Rising: steady climb over last 5</option>
-      <option value="level">New level: jump that held 3+ games</option>
+    <select id="scanType" aria-label="Scan type" style="flex:1">
       <option value="last3">Last 3 games above his average</option>
       <option value="season">Games above his own average</option>
       <option value="pos">Games above position average</option>
     </select>
   </div>
   <div id="filters">
-    <label>Min avg minutes<input id="minMin" type="number" inputmode="decimal" value="26"></label>
-    <label>Max avg minutes<input id="maxMin" type="number" inputmode="decimal" placeholder="Any"></label>
-    <label>Min total minutes<input id="minTot" type="number" inputmode="numeric" value="400"></label>
-    <label>Projected minutes<input id="projMin" type="number" inputmode="decimal" placeholder="e.g. 32"></label>
-    <label>Min games<input id="minGames" type="number" inputmode="numeric" value="20"></label>
+    <div class="wide">
+      <div class="subhead">Positions (none = all)</div>
+      <div class="chips" id="positions">
+        <button type="button" data-pos="QB" aria-pressed="false">QB</button>
+        <button type="button" data-pos="RB" aria-pressed="false">RB</button>
+        <button type="button" data-pos="WR" aria-pressed="false">WR</button>
+        <button type="button" data-pos="TE" aria-pressed="false">TE</button>
+      </div>
+    </div>
+    <label>Min avg snap %<input id="minSnap" type="number" inputmode="decimal" value="40"></label>
+    <label>Min games<input id="minGames" type="number" inputmode="numeric" value="3"></label>
     <label>Max dud games<input id="maxDuds" type="number" inputmode="numeric" placeholder="Any"></label>
+    <label>Last N games<input id="lastN" type="number" inputmode="numeric" placeholder="All"></label>
+    <label>Ignore games under snap %<input id="dropSnap" type="number" inputmode="decimal" value="25"></label>
     <label>Sort by
       <select id="sort">
         <option value="hit">Hit rate at line</option>
+        <option value="trend">Trend (last 3 vs before)</option>
         <option value="ratio">Floor ratio</option>
         <option value="p10">10th percentile</option>
         <option value="avg">Average</option>
-        <option value="pm">Per minute</option>
         <option value="duds">Fewest dud games</option>
+        <option value="catch">Catch %</option>
       </select>
     </label>
-    <label class="wide">Player or team<input id="search" type="search" placeholder="e.g. Buzelis or CHI"></label>
+    <label class="wide">Player<input id="search" type="search" placeholder="e.g. Lamb"></label>
     <div class="wide">
-      <div class="teamhead">Teams (tap to select, none = all)<button id="clearTeams" type="button">Clear</button></div>
-      <div id="teams" class="teams"></div>
+      <div class="subhead">Teams (none = all)<button id="clearTeams" type="button">Clear</button></div>
+      <div class="chips" id="teams"></div>
     </div>
-    <label class="check wide"><input id="dropShort" type="checkbox" checked>Ignore short games (under 60% of his usual minutes)</label>
-    <div class="wide" style="display:flex;gap:8px;flex-wrap:wrap">
-      <label class="filebtn">Load a new CSV<input class="fileinput" type="file" accept=".csv,text/csv,text/plain"></label>
-    </div>
-    <p class="note wide">A dud game is one under half the player’s average. Floor ratio is the 10th percentile divided by the average; closer to 1 means shorter tails.</p>
+    <p class="note wide">Whole-number lines mean “at least” (1 = 1+). A dud game is under half the player’s average. Trend compares his last 3 games to his earlier games. Games where he played under the snap % cutoff (injury exits) are ignored.</p>
   </div>
 </header>
 
-<main id="main">
-  <div class="empty" id="empty">
-    <h2>Load your game log CSV</h2>
-    <p>Loading the latest data. If nothing appears, choose your nba_gamelogs CSV instead; it stays on this device.</p>
-    <label class="filebtn primary">Choose CSV<input class="fileinput" type="file" accept=".csv,text/csv,text/plain"></label>
+<main>
+  <div class="empty" id="empty" hidden>
+    <h2>Couldn’t load the latest data</h2>
+    <p>The automatic download didn’t work here. You can load an nfl_weekly CSV by hand.</p>
+    <label class="filebtn">Choose CSV<input id="file" type="file" accept=".csv,text/csv,text/plain"></label>
   </div>
   <div id="results" hidden>
     <div class="summary" id="summary"></div>
@@ -196,407 +182,173 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
 </main>
 
 <script>
-var optsOpen = true;   /* Custom / Prices option boxes */
 (function(){
 const $ = id => document.getElementById(id);
-let players = [], shown = 60, view = "dots", early = "", teams = new Set();
+const YDS = new Set(["receiving_yards","rushing_yards","rush_rec_yds","passing_yards"]);
+const PCT = new Set(["snap_pct","target_share"]);
+let players = [], shown = 60, view = "dots", teams = new Set(), positions = new Set();
+const INPUTS = ["stat","line","minSnap","minGames","maxDuds","lastN","dropSnap","sort","search","scanType","pLo","pHi","pGap","pGames","pSort"];
+var optsOpen = true, PROPS = null;
 
-/* ---------- storage (IndexedDB, guarded) ---------- */
-function idb(){
-  return new Promise((res, rej) => {
-    try{
-      const r = indexedDB.open("nbafloor", 1);
-      r.onupgradeneeded = () => r.result.createObjectStore("kv");
-      r.onsuccess = () => res(r.result);
-      r.onerror = () => rej(r.error);
-    }catch(e){ rej(e); }
-  });
-}
-async function saveCSV(name, text){
-  try{ const db = await idb(); db.transaction("kv","readwrite").objectStore("kv").put({name, text}, "csv"); }catch(e){}
-}
-async function loadSaved(){
-  try{
-    const db = await idb();
-    return await new Promise(res => {
-      const q = db.transaction("kv").objectStore("kv").get("csv");
-      q.onsuccess = () => res(q.result || null); q.onerror = () => res(null);
-    });
-  }catch(e){ return null; }
-}
+/* ---------- prefs ---------- */
 function savePrefs(){
   try{
-    const p = {}; ["stat","line","minMin","maxMin","minTot","projMin","minGames","maxDuds","sort","search","scanMode","cStat","cMin","cMax","cDuds","c3pa","cGames","cRole","pLo","pHi","pGap","pGames"].forEach(k => p[k] = $(k).value);
-    p.dropShort = $("dropShort").checked;
-    p.view = view;
-    p.teams = [...teams];
-    localStorage.setItem("nbafloor-prefs", JSON.stringify(p));
+    const p = {}; INPUTS.forEach(k => p[k] = $(k).value);
+    p.view = view; p.teams = [...teams]; p.positions = [...positions];
+    localStorage.setItem("nflfloor-prefs", JSON.stringify(p));
   }catch(e){}
 }
 function loadPrefs(){
   try{
-    const p = JSON.parse(localStorage.getItem("nbafloor-prefs") || "null"); if(!p) return;
-    ["stat","line","minMin","maxMin","minTot","projMin","minGames","maxDuds","sort","search","scanMode","cStat","cMin","cMax","cDuds","c3pa","cGames","cRole","pLo","pHi","pGap","pGames"].forEach(k => { if(p[k] !== undefined && $(k)) $(k).value = p[k]; });
-    if(p.dropShort !== undefined) $("dropShort").checked = p.dropShort;
+    const p = JSON.parse(localStorage.getItem("nflfloor-prefs") || "null"); if(!p) return;
+    INPUTS.forEach(k => { if(p[k] !== undefined) $(k).value = p[k]; });
     if(p.view) view = p.view;
     if(Array.isArray(p.teams)) teams = new Set(p.teams);
+    if(Array.isArray(p.positions)) positions = new Set(p.positions);
   }catch(e){}
 }
 
-/* ---------- CSV ---------- */
+/* ---------- data ---------- */
 function parseCSV(text){
   const lines = text.replace(/\r/g,"").split("\n").filter(Boolean);
-  const split = l => {
-    const out = []; let cur = "", q = false;
-    for(const ch of l){
-      if(ch === '"'){ q = !q; }
-      else if(ch === "," && !q){ out.push(cur); cur = ""; }
-      else cur += ch;
-    }
-    out.push(cur); return out;
-  };
+  const split = l => { const out = []; let cur = "", q = false;
+    for(const ch of l){ if(ch === '"') q = !q; else if(ch === "," && !q){ out.push(cur); cur = ""; } else cur += ch; }
+    out.push(cur); return out; };
   const head = split(lines[0]);
   return lines.slice(1).map(l => { const v = split(l), o = {}; head.forEach((h,i) => o[h] = v[i]); return o; });
 }
-
 function build(rows){
   const map = new Map();
   for(const r of rows){
-    const id = r.PLAYER_ID; if(!id) continue;
-    if(!map.has(id)) map.set(id, {id, name:r.PLAYER_NAME, team:"", pos:(r.POSITION || "").trim(), lastDate:"", games:[]});
-    const p = map.get(id);
-    const n = k => parseFloat(r[k]) || 0;
-    const g = {date:r.GAME_DATE||"", gid:r.GAME_ID, team:r.TEAM_ABBREVIATION, opp:(r.MATCHUP || "").trim().split(" ").pop(), min:n("MIN"), PTS:n("PTS"), REB:n("REB"), AST:n("AST"), FG3M:n("FG3M"), FG3A:n("FG3A")};
-    g.MIN = g.min; g.PRA = g.PTS + g.REB + g.AST; g.PR = g.PTS + g.REB; g.PA = g.PTS + g.AST; g.RA = g.REB + g.AST;
+    if(!r.player_id) continue;
+    if(!map.has(r.player_id)) map.set(r.player_id, {id:r.player_id, name:r.player, pos:r.position, team:"", lastWeek:0, games:[]});
+    const p = map.get(r.player_id), g = {week: +r.week || 0};
+    for(const k in r) if(!["player_id","player","position","team","opponent","game_id","week"].includes(k)) g[k] = r[k] === "" ? null : parseFloat(r[k]);
+    g.opp = r.opponent;
     p.games.push(g);
-    if(g.date >= p.lastDate){ p.lastDate = g.date; p.team = r.TEAM_ABBREVIATION || p.team; }
+    if(g.week >= p.lastWeek){ p.lastWeek = g.week; p.team = r.team; }
   }
   return [...map.values()].map(p => {
-    p.games.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-    p.games = p.games.filter(g => g.min > 0);   /* did-not-play rows are not games */
-    if(!p.games.length) return null;
-    p.avgMin = p.games.reduce((s,g) => s + g.min, 0) / p.games.length;
-    const ms = p.games.map(g => g.min).sort((a, b) => a - b), mid = Math.floor(ms.length / 2);
-    p.usualMin = ms.length % 2 ? ms[mid] : (ms[mid - 1] + ms[mid]) / 2;
+    p.games.sort((a,b) => a.week - b.week);
+    const s = p.games.filter(g => g.snap_pct !== null);
+    p.avgSnap = s.length ? s.reduce((t,g) => t + g.snap_pct, 0) / s.length : 0;
     return p;
-  }).filter(Boolean);
+  });
 }
 
-function quant(sorted, q){
-  if(!sorted.length) return 0;
-  const pos = (sorted.length - 1) * q, lo = Math.floor(pos), hi = Math.ceil(pos);
-  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
-}
-
+/* ---------- math ---------- */
+function quant(sorted, q){ if(!sorted.length) return 0; const pos = (sorted.length-1)*q, lo = Math.floor(pos), hi = Math.ceil(pos); return sorted[lo] + (sorted[hi]-sorted[lo])*(pos-lo); }
 function fmt(x, d = 1){ return Number.isInteger(x) ? String(x) : x.toFixed(d); }
-/* Whole number = "at least" (6 means 6+). Half number = "over" (5.5 means 6+ too). */
 function clears(v, line){ return Number.isInteger(line) ? v >= line : v > line; }
 function lineText(line){ return Number.isInteger(line) ? `${line}+` : `over ${fmt(line)}`; }
+function binW(stat, vmax){ return YDS.has(stat) ? (vmax > 120 ? 10 : 5) : (PCT.has(stat) ? 5 : 1); }
 
-/* ---------- render ---------- */
 function compute(){
   const stat = $("stat").value;
   const lineRaw = $("line").value.trim(), line = lineRaw === "" ? null : parseFloat(lineRaw);
-  const minMin = parseFloat($("minMin").value) || 0;
+  const minSnap = parseFloat($("minSnap").value) || 0;
   const minGames = parseInt($("minGames").value) || 1;
   const maxDuds = $("maxDuds").value.trim() === "" ? null : parseInt($("maxDuds").value);
+  const lastN = parseInt($("lastN").value) || 0;
+  const dropSnap = parseFloat($("dropSnap").value) || 0;
   const term = $("search").value.trim().toLowerCase();
-  const drop = $("dropShort").checked;
-  const maxMin = $("maxMin").value.trim() === "" ? Infinity : parseFloat($("maxMin").value);
-  const minTot = parseFloat($("minTot").value) || 0;
-  const projMin = $("projMin").value.trim() === "" ? null : parseFloat($("projMin").value);
-
-  let out = [];
+  const out = [];
   for(const p of players){
-    if(p.avgMin < minMin || p.avgMin > maxMin) continue;
+    if(positions.size && !positions.has(p.pos)) continue;
     if(teams.size && !teams.has(p.team)) continue;
-    if(term && !p.name.toLowerCase().includes(term) && p.team.toLowerCase() !== term) continue;
-    const games = drop ? p.games.filter(g => g.min >= 0.6 * p.usualMin) : p.games;
+    if(term && !p.name.toLowerCase().includes(term)) continue;
+    let games = p.games.filter(g => g.snap_pct === null || g.snap_pct >= dropSnap);
+    if(lastN) games = games.slice(-lastN);
     if(games.length < minGames) continue;
-    const tot = games.reduce((s,g) => s + g.min, 0);
-    if(tot < minTot || tot <= 0) continue;
-    const vals = games.map(g => g[stat]);
+    const snapG = games.filter(g => g.snap_pct !== null);
+    const avgSnap = snapG.length ? snapG.reduce((t,g) => t + g.snap_pct, 0) / snapG.length : 0;
+    if(avgSnap < minSnap) continue;
+    const vals = games.map(g => g[stat] || 0);
     const sorted = [...vals].sort((a,b) => a - b);
     const avg = vals.reduce((s,v) => s + v, 0) / vals.length;
     const duds = vals.filter(v => v < avg / 2).length;
     if(maxDuds !== null && duds > maxDuds) continue;
-    const p10 = quant(sorted, .1), med = quant(sorted, .5), p90 = quant(sorted, .9);
+    const recent = vals.slice(-3), before = vals.slice(0, -3);
+    const trend = before.length >= 2 ? recent.reduce((s,v)=>s+v,0)/recent.length - before.reduce((s,v)=>s+v,0)/before.length : null;
+    const tg = games.reduce((s,g) => s + (g.targets || 0), 0), rc = games.reduce((s,g) => s + (g.receptions || 0), 0);
     const hits = line === null ? null : vals.filter(v => clears(v, line)).length;
-    const pm = vals.reduce((s,v) => s + v, 0) / tot;
-    out.push({p, vals, sorted, avg, med, p10, p90, duds, n:vals.length, pm, tot, proj: projMin ? pm * projMin : null,
-      ratio: avg > 0 ? p10 / avg : 0, hit: hits === null ? null : hits / vals.length, hits});
+    out.push({p, vals, sorted, avg, duds, n: vals.length, avgSnap, trend,
+      med: quant(sorted,.5), p10: quant(sorted,.1), p90: quant(sorted,.9),
+      ratio: avg > 0 ? quant(sorted,.1) / avg : 0, catchPct: tg ? rc / tg * 100 : null,
+      hit: hits === null ? null : hits / vals.length, hits, games});
   }
-  const key = $("sort").value;
-  const eff = key === "hit" && line === null ? "ratio" : key;
-  const by = {hit:r => -r.hit, ratio:r => -r.ratio, p10:r => -r.p10, avg:r => -r.avg, duds:r => r.duds / r.n, pm:r => -r.pm};
+  const key = $("sort").value, eff = key === "hit" && line === null ? "avg" : key;
+  const by = {hit:r => -r.hit, ratio:r => -r.ratio, p10:r => -r.p10, avg:r => -r.avg, duds:r => r.duds / r.n,
+    trend:r => r.trend === null ? Infinity : -r.trend, catch:r => r.catchPct === null ? Infinity : -r.catchPct};
   out.sort((a,b) => by[eff](a) - by[eff](b) || b.avg - a.avg);
-  return {out, line, stat, eff, projMin};
+  return {out, line, stat, eff};
 }
 
+/* ---------- visuals ---------- */
+function colorFor(v, line){ return line === null ? "var(--dot)" : (clears(v, line) ? "var(--hit)" : "var(--miss)"); }
 function strip(r, line){
-  const max = Math.max(r.sorted[r.sorted.length - 1], line || 0, 1);
-  const W = 300, H = 30, pad = 4, x = v => pad + (v / max) * (W - pad * 2);
+  const max = Math.max(r.sorted[r.sorted.length-1], line || 0, 1), W = 300, H = 30, pad = 4, x = v => pad + v / max * (W - pad*2);
   let s = `<svg class="strip" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Game by game distribution">`;
-  s += `<line x1="${pad}" x2="${W-pad}" y1="${H-4}" y2="${H-4}" stroke="var(--rule)" stroke-width="1"/>`;
-  s += `<line x1="${x(r.avg)}" x2="${x(r.avg)}" y1="2" y2="${H-4}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 2"/>`;
+  s += `<line x1="${pad}" x2="${W-pad}" y1="${H-4}" y2="${H-4}" stroke="var(--rule)"/>`;
+  s += `<line x1="${x(r.avg)}" x2="${x(r.avg)}" y1="2" y2="${H-4}" stroke="var(--muted)" stroke-dasharray="2 2"/>`;
   if(line !== null) s += `<line x1="${x(line)}" x2="${x(line)}" y1="0" y2="${H}" stroke="var(--court)" stroke-width="2"/>`;
-  r.vals.forEach((v,i) => {
-    const y = 6 + ((i * 7919) % 17);
-    const c = line === null ? "var(--dot)" : (clears(v, line) ? "var(--hit)" : "var(--miss)");
-    s += `<circle cx="${x(v)}" cy="${y}" r="2.6" fill="${c}" fill-opacity=".8"/>`;
-  });
+  r.vals.forEach((v,i) => s += `<circle cx="${x(v)}" cy="${6 + (i*7919)%17}" r="3" fill="${colorFor(v,line)}" fill-opacity=".85"/>`);
   return s + "</svg>";
 }
-
-function curve(r, line){
-  /* Zones anchored to his average: core within 25%, duds under half, monsters over 1.5x */
-  const W = 300, H = 112, base = 78, L = 46, Rr = 254, mu = Math.max(r.avg, 0.5);
-  const lo = mu * 0.5, hi = mu * 1.5, x = v => L + (v - lo) / (hi - lo) * (Rr - L);
-  const duds = r.vals.filter(v => v < lo), mons = r.vals.filter(v => v > hi), mid = r.sorted.filter(v => v >= lo && v <= hi);
-  const step = mu >= 12 ? 1 : 0.5, key = v => Math.round(v / step) * step;
+function curve(r, line, stat){
+  const W = 300, H = 92, pad = 6, base = H - 8;
+  const vmax = Math.max(r.sorted[r.sorted.length-1], line || 0, r.avg * 1.6, 1), w = binW(stat, vmax);
+  const x = v => pad + v / vmax * (W - pad*2), bin = v => Math.round(v / w) * w;
   const counts = {}; let maxStack = 1;
-  mid.forEach(v => { const k = key(v); counts[k] = (counts[k] || 0) + 1; maxStack = Math.max(maxStack, counts[k]); });
-  const binW = (Rr - L) / ((hi - lo) / step);
-  const dr = Math.max(1.6, Math.min(3.4, binW * 0.45, (base - 8) / (maxStack * 2.2)));
-  let s = `<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Games against an ideal bell curve, with dud and monster games collected into bubbles">`;
-  s += `<line x1="${L}" x2="${Rr}" y1="${base}" y2="${base}" stroke="var(--rule)"/>`;
-  s += `<rect x="${x(mu * 0.75)}" y="${base}" width="${x(mu * 1.25) - x(mu * 0.75)}" height="3" fill="var(--court)" opacity=".35"/>`;
-  const sd = mu * 0.2, peak = base - 8, pts = [];
-  for(let i = 0; i <= 120; i++){ const v = lo + i / 120 * (hi - lo); pts.push(`${x(v).toFixed(1)},${(base - Math.exp(-0.5 * ((v - mu) / sd) ** 2) * peak).toFixed(1)}`); }
+  r.sorted.forEach(v => { const k = bin(v); counts[k] = (counts[k]||0) + 1; maxStack = Math.max(maxStack, counts[k]); });
+  const dr = Math.min(4, (base - 6) / (maxStack * 2.2));
+  let s = `<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Games stacked by total against an ideal bell curve">`;
+  s += `<line x1="${pad}" x2="${W-pad}" y1="${base}" y2="${base}" stroke="var(--rule)"/>`;
+  const mu = r.avg, sd = Math.max(mu * 0.12, w * 0.5), peak = Math.min(maxStack * dr * 2.2 * 1.3, base - 2), pts = [];
+  for(let i = 0; i <= 150; i++){ const v = i/150*vmax; pts.push(`${x(v).toFixed(1)},${(base - Math.exp(-0.5*((v-mu)/sd)**2)*peak).toFixed(1)}`); }
   s += `<polyline points="${pts.join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  if(line !== null){
-    if(line >= lo && line <= hi) s += `<line x1="${x(line)}" x2="${x(line)}" y1="4" y2="${base}" stroke="var(--court)" stroke-width="2"/>`;
-    else { const lx = line < lo ? L + 2 : Rr - 2, d = line < lo ? -1 : 1; s += `<path d="M${lx} 10 l${d * 8} 5 l${-d * 8} 5 Z" fill="var(--court)"/>`; }
-  }
+  if(line !== null) s += `<line x1="${x(line)}" x2="${x(line)}" y1="2" y2="${base}" stroke="var(--court)" stroke-width="2"/>`;
   const seen = {};
-  mid.forEach(v => {
-    const k = key(v), i = seen[k] = (seen[k] || 0) + 1, cy = base - dr - 1 - (i - 1) * dr * 2.2;
-    const core = v >= mu * 0.75 && v <= mu * 1.25;
-    const c = line === null ? (core ? "var(--court)" : "var(--dot)") : (clears(v, line) ? "var(--hit)" : "var(--miss)");
-    s += core ? `<circle cx="${x(k).toFixed(1)}" cy="${cy.toFixed(1)}" r="${dr.toFixed(1)}" fill="${c}"/>`
-              : `<circle cx="${x(k).toFixed(1)}" cy="${cy.toFixed(1)}" r="${(dr * 0.85).toFixed(1)}" fill="none" stroke="${c}" stroke-width="1.6"/>`;
-  });
-  const bubble = (arr, cx, col, lab) => {
-    if(!arr.length) return `<text x="${cx}" y="${base - 4}" text-anchor="middle" font-size="9" fill="var(--muted)">none</text>`;
-    const rad = Math.min(19, 7 + 4 * Math.sqrt(arr.length - 1)), cy = base - rad;
-    const [l1, l2] = lab.split("|");
-    return `<circle cx="${cx}" cy="${cy}" r="${rad}" fill="${col}" fill-opacity=".88"/><text x="${cx}" y="${cy + 4.5}" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">${arr.length}</text>` +
-           `<text x="${cx}" y="${cy - rad - 15}" text-anchor="middle" font-size="9.5" font-weight="600" fill="${col}">${l1}</text><text x="${cx}" y="${cy - rad - 4}" text-anchor="middle" font-size="9.5" fill="var(--muted)">${l2}</text>`;
-  };
-  s += bubble(duds, 22, "var(--miss)", duds.length ? `${duds.length > 1 ? "duds" : "dud"}|low ${fmt(Math.min(...duds))}` : "");
-  s += bubble(mons, 278, "var(--hit)", mons.length ? `${mons.length > 1 ? "monsters" : "monster"}|high ${fmt(Math.max(...mons))}` : "");
-  s += `<text x="${x(lo)}" y="${base + 13}" text-anchor="start" font-size="9.5" fill="var(--muted)">${fmt(lo)}</text><text x="${x(mu)}" y="${base + 13}" text-anchor="middle" font-size="9.5" fill="var(--muted)">avg ${fmt(mu)}</text><text x="${x(hi)}" y="${base + 13}" text-anchor="end" font-size="9.5" fill="var(--muted)">${fmt(hi)}</text>`;
-  const core = r.vals.filter(v => v >= mu * 0.75 && v <= mu * 1.25).length;
-  s += `<text x="150" y="${H - 4}" text-anchor="middle" font-size="10" fill="var(--muted)">${core} of ${r.n} games in the core (within 25% of his average)</text>`;
+  r.sorted.forEach(v => { const k = bin(v), i = seen[k] = (seen[k]||0) + 1;
+    s += `<circle cx="${x(k).toFixed(1)}" cy="${(base - dr - 1 - (i-1)*dr*2.2).toFixed(1)}" r="${dr.toFixed(1)}" fill="${colorFor(v,line)}"/>`; });
   return s + "</svg>";
 }
-
 function ring(r, line){
-  const S = 190, c = S / 2, inner = 14, outer = c - 8;
-  const vmax = Math.max(r.sorted[r.sorted.length - 1], line || 0, 1);
-  const rad = v => inner + (v / vmax) * (outer - inner);
-  const n = r.vals.length;
-  const slots = Math.max(82, n);
-  const pts = r.vals.map((v, i) => { const a = -Math.PI / 2 + 2 * Math.PI * i / slots; return [c + rad(v) * Math.cos(a), c + rad(v) * Math.sin(a), v]; });
-  let s = `<svg class="ring" viewBox="0 0 ${S} ${S}" role="img" aria-label="Each game around a circle, farther out for higher totals">`;
+  const S = 190, c = S/2, inner = 14, outer = c - 8, n = r.vals.length, slots = Math.max(17, n);
+  const vmax = Math.max(r.sorted[r.sorted.length-1], line || 0, 1), rad = v => inner + v / vmax * (outer - inner);
+  const pts = r.vals.map((v,i) => { const a = -Math.PI/2 + 2*Math.PI*i/slots; return [c + rad(v)*Math.cos(a), c + rad(v)*Math.sin(a), v]; });
   const ptStr = pts.map(p => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
-  if(n >= slots * 0.9) s += `<polygon points="${ptStr}" fill="var(--chip)" stroke="var(--muted)" stroke-width="1" stroke-opacity=".6"/>`;
+  let s = `<svg class="ring" viewBox="0 0 ${S} ${S}" role="img" aria-label="Each game around a 17-game season clock, farther out for higher totals">`;
+  if(n >= slots * 0.9) s += `<polygon points="${ptStr}" fill="var(--chip)" stroke="var(--muted)" stroke-opacity=".6"/>`;
   else if(n >= 2) s += `<polyline points="${ptStr}" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-opacity=".7"/>`;
   if(line !== null) s += `<circle cx="${c}" cy="${c}" r="${rad(line).toFixed(1)}" fill="none" stroke="var(--court)" stroke-width="1.5" stroke-opacity=".75"/>`;
   s += `<circle cx="${c}" cy="${c}" r="${rad(r.avg).toFixed(1)}" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-  pts.forEach(p => { const col = line === null ? "var(--dot)" : (clears(p[2], line) ? "var(--hit)" : "var(--miss)"); s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.6" fill="${col}"/>`; });
+  pts.forEach(p => s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4" fill="${colorFor(p[2],line)}"/>`);
   return s + "</svg>";
 }
-
-function shapeScore(r){
-  const mu = r.avg, sd = Math.max(mu * 0.2, 0.5), counts = {};
-  r.vals.forEach(v => { const k = Math.round(v); counts[k] = (counts[k] || 0) + 1; });
-  let o = 0;
-  for(const k in counts){ const pdf = Math.exp(-0.5 * ((k - mu) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI)); o += Math.min(counts[k] / r.n, pdf); }
+function shapeScore(r, stat){
+  const vmax = Math.max(r.sorted[r.sorted.length-1], 1), w = binW(stat, vmax);
+  const mu = r.avg, sd = Math.max(mu * 0.12, w * 0.5), counts = {};
+  r.vals.forEach(v => { const k = Math.round(v / w) * w; counts[k] = (counts[k]||0) + 1; });
+  let o = 0; for(const k in counts){ const pdf = Math.exp(-0.5*((k-mu)/sd)**2)/(sd*Math.sqrt(2*Math.PI)) * w; o += Math.min(counts[k]/r.n, pdf); }
   return Math.round(o * 100);
 }
-
-function roundness(r){
-  if(r.avg <= 0) return 0;
-  const sd = Math.sqrt(r.vals.reduce((s, v) => s + (v - r.avg) ** 2, 0) / r.n);
-  return Math.max(0, Math.round((1 - sd / r.avg) * 100));
-}
-
-function ladder(r){
-  const small = r.p90 <= 15, step = small ? 1 : (r.p90 > 35 ? 3 : 2);
-  let start = Math.max(0, Math.floor(r.p10) - step), end = Math.ceil(r.p90) + step;
+function roundness(r){ if(r.avg <= 0) return 0; const sd = Math.sqrt(r.vals.reduce((s,v) => s + (v-r.avg)**2, 0) / r.n); return Math.max(0, Math.round((1 - sd/r.avg) * 100)); }
+function ladder(r, stat){
+  const span = r.p90 - r.p10, step = YDS.has(stat) ? (r.p90 > 150 ? 25 : r.p90 > 60 ? 10 : 5) : PCT.has(stat) ? 10 : (span > 8 ? 2 : 1);
+  const start = Math.max(0, Math.floor(r.p10 / step) * step), end = Math.ceil(r.p90 / step) * step + step;
   let rows = "";
   for(let t = start; t <= end; t += step){
-    const lineVal = t + .5, hits = r.vals.filter(v => v > lineVal).length;
-    rows += `<tr><td>Over ${fmt(lineVal)}</td><td class="num"><b>${Math.round(hits / r.n * 100)}%</b></td><td>${hits} of ${r.n}</td></tr>`;
+    const lv = YDS.has(stat) ? t - 0.5 : t + 0.5, h = r.vals.filter(v => v > lv).length;
+    rows += `<tr><td>Over ${fmt(lv)}</td><td class="num"><b>${Math.round(h / r.n * 100)}%</b></td><td>${h} of ${r.n}</td></tr>`;
   }
   return `<div class="ladder"><table>${rows}</table></div>`;
 }
 
-/* ---------- three-point volume check ---------- */
-function volumeLine(p){
-  const g = p.games, last = g.slice(-5), a = last.map(x => x.FG3A), m = last.reduce((s, x) => s + x.FG3M, 0), at = a.reduce((s, x) => s + x, 0);
-  const ma = g.reduce((s, x) => s + x.FG3M, 0), aa = g.reduce((s, x) => s + x.FG3A, 0);
-  const low = Math.min(...a), avgA = aa / g.length;
-  return `<div class="trend" style="font-size:13.5px">3PA last ${last.length}: ${a.join(", ")}${low < avgA * 0.7 ? ` <span class="tag eff">low-volume game in there</span>` : ""}<br>
-    3P% last ${last.length}: ${at ? Math.round(m / at * 100) : 0}% · season ${aa ? Math.round(ma / aa * 100) : 0}% on ${fmt(avgA)} attempts a game</div>`;
-}
-
-/* ---------- scan ---------- */
-const SCAN_STATS = {PTS:["Points",5],REB:["Rebounds",2],AST:["Assists",1.5],FG3M:["Threes",0.8],FG3A:["3PA",3],PRA:["PRA",8],PR:["Pts+Reb",6],PA:["Pts+Ast",6],RA:["Reb+Ast",3],MIN:["Minutes",10]};
-const mean = a => a.reduce((s, v) => s + v, 0) / a.length;
-function fit(v){ /* least squares slope and R^2 for points 0..n-1 */
-  const n = v.length, xm = (n - 1) / 2, ym = mean(v); let sxy = 0, sxx = 0, syy = 0;
-  v.forEach((y, i) => { sxy += (i - xm) * (y - ym); sxx += (i - xm) ** 2; syy += (y - ym) ** 2; });
-  const b = sxx ? sxy / sxx : 0; return {b, r2: syy ? (sxy * sxy) / (sxx * syy) : 0};
-}
-function threesTag(gBefore, gAfter){
-  const a0 = mean(gBefore.map(g => g.FG3A)), a1 = mean(gAfter.map(g => g.FG3A));
-  const p = gs => { const at = gs.reduce((s, g) => s + g.FG3A, 0); return at ? gs.reduce((s, g) => s + g.FG3M, 0) / at : 0; };
-  const up = a0 > 0 ? a1 / a0 - 1 : 0;
-  return up >= 0.15 ? `<span class="tag role">volume-driven, 3PA ${fmt(a0)}→${fmt(a1)}</span>`
-                    : `<span class="tag eff">shooting-driven, 3P% ${Math.round(p(gBefore) * 100)}%→${Math.round(p(gAfter) * 100)}%</span>`;
-}
-function roleTag(stat, before, after){
-  if(stat === "MIN") return `<span class="tag mins">minutes</span>`;
-  if(stat === "FG3A"){
-    const up = before > 0 ? after / before - 1 : 0;
-    return up >= 0.15 ? `<span class="tag role">more minutes, ${fmt(before)}→${fmt(after)}</span>` : `<span class="tag role">bigger share of shots from three, same minutes</span>`;
-  }
-  const up = before > 0 ? after / before - 1 : 0;
-  return up >= 0.15 ? `<span class="tag role">role-driven, min ${fmt(before)}→${fmt(after)}</span>` : `<span class="tag eff">efficiency-driven, min ${fmt(before)}→${fmt(after)}</span>`;
-}
-function renderScan(){
-  savePrefs();
-  const mode = $("scanMode").value, term = $("search").value.trim().toLowerCase();
-  const minMin = parseFloat($("minMin").value) || 0, maxMin = $("maxMin").value.trim() === "" ? Infinity : parseFloat($("maxMin").value);
-  const minGames = parseInt($("minGames").value) || 1, minTot = parseFloat($("minTot").value) || 0, drop = $("dropShort").checked;
-  const trend = mode === "rising" || mode === "level";
-  const pool = [];
-  for(const p of players){
-    if(teams.size && !teams.has(p.team)) continue;
-    if(term && !p.name.toLowerCase().includes(term) && p.team.toLowerCase() !== term) continue;
-    /* trend modes use every game so a bench player moving into the rotation isn't filtered out */
-    const games = trend ? p.games : (drop ? p.games.filter(g => g.min >= 0.6 * p.usualMin) : p.games);
-    const avgMin = mean(p.games.slice(-10).map(g => g.min));
-    if(!trend && (p.avgMin < minMin || p.avgMin > maxMin)) continue;
-    if(trend && avgMin < Math.min(minMin, 12)) continue;
-    if(games.length < (trend ? 6 : minGames)) continue;
-    if(!trend && games.reduce((s, g) => s + g.min, 0) < minTot) continue;
-    pool.push({p, games});
-  }
-  const posAvg = {};
-  if(mode === "pos") for(const k in SCAN_STATS){ const acc = {}; pool.forEach(({p, games}) => { if(!p.pos) return; const a = acc[p.pos] = acc[p.pos] || [0, 0]; games.forEach(g => { a[0] += g[k]; a[1]++; }); }); posAvg[k] = Object.fromEntries(Object.entries(acc).map(([q, a]) => [q, a[0] / a[1]])); }
-  const res = [];
-  for(const {p, games} of pool){
-    for(const [k, [label, minAvg]] of Object.entries(SCAN_STATS)){
-      const v = games.map(g => g[k]), avg = mean(v);
-      if(avg < minAvg) continue;
-      if((k === "FG3M" || k === "FG3A") && mean(games.map(g => g.FG3A)) < 3) continue;   /* skip bigs who take one three a night */
-      if(mode === "rising"){
-        const last = v.slice(-5); if(last.length < 5) continue;
-        const {b, r2} = fit(last), rel = b / Math.max(avg, 1);
-        if(rel < 0.08 || r2 < 0.7 || last[4] <= last[0] || last[4] < avg) continue;
-        const mins = games.slice(-5).map(g => g.min);
-        const tag = k === "FG3M" ? threesTag(games.slice(-10, -5).length ? games.slice(-10, -5) : games.slice(0, -5), games.slice(-5)) : roleTag(k, mins[0], mins[4]);
-        res.push({p, k, label, score: rel * r2, text: `Rising: ${last.map(x => fmt(x)).join("→")}`, tag});
-      } else if(mode === "level"){
-        let hit = null;
-        for(const kk of [4, 3]){
-          if(v.length < kk + 5) continue;
-          const prior = v.slice(0, -kk), lastK = v.slice(-kk), pa = mean(prior), m = mean(lastK);
-          const sd = Math.sqrt(mean(prior.map(x => (x - pa) ** 2)));
-          if(lastK.every(x => x >= pa * 1.25 && x >= pa + 0.5 * sd) && (Math.max(...lastK) - Math.min(...lastK)) <= 0.35 * m){
-            const mb = mean(games.slice(0, -kk).map(g => g.min)), ma = mean(games.slice(-kk).map(g => g.min));
-            hit = {p, k, label, score: m / Math.max(pa, 0.5), text: `New level: ${fmt(pa)} before, last ${kk}: ${lastK.map(x => fmt(x)).join(", ")}`,
-                   tag: k === "FG3M" ? threesTag(games.slice(0, -kk), games.slice(-kk)) : roleTag(k, mb, ma)}; break;
-          }
-        }
-        if(hit) res.push(hit);
-      } else if(k === "MIN") continue;
-      else if(mode === "last3"){
-        const last = v.slice(-3), n = last.filter(x => x > avg).length;
-        res.push({p, k, label, score: n * 1000 + (mean(last) - avg) / avg * 100, text: `${n}/3 last games above his ${fmt(avg)} avg (last 3 avg ${fmt(mean(last))})`});
-      } else if(mode === "season"){
-        const n = v.filter(x => x > avg).length; res.push({p, k, label, score: n / v.length * 1000 + v.length, text: `${n}/${v.length} games above his ${fmt(avg)} avg`});
-      } else if(mode === "pos"){
-        const pa = (posAvg[k] || {})[p.pos]; if(!pa) continue;
-        const n = v.filter(x => x > pa).length; res.push({p, k, label, score: n / v.length * 1000 + avg / pa, text: `${n}/${v.length} games above the ${p.pos} average of ${fmt(pa)}`});
-      }
-    }
-  }
-  res.sort((a, b) => b.score - a.score);
-  const noPos = mode === "pos" && !players.some(p => p.pos);
-  $("summary").textContent = noPos ? "This CSV has no positions. Run the updated fetch script to add them." :
-    `${res.length} flags. ` + (trend ? "Trend modes use every game, including short ones, so rotation changes show up." : "");
-  $("list").innerHTML = res.slice(0, shown).map((r, i) => `<div class="row"><div class="name">${i + 1}. ${r.p.name}, ${r.p.pos || r.p.team}, ${r.label}</div>
-    <div class="team">${r.p.team}</div><div class="trend">${r.text}${r.tag || ""}</div></div>`).join("") ||
-    `<div class="empty"><h2>No flags right now</h2><p>${trend ? "Nobody fits this pattern yet. Trends need at least 6 games." : "Loosen the minutes or games filters."}</p></div>`;
-  $("more").hidden = res.length <= shown;
-}
-
-/* ---------- custom screen ---------- */
-let TODAY = null;   /* tonight's matchups, from data/today.json when hosted on GitHub */
-function defense(){
-  const tg = {};
-  for(const p of players) for(const g of p.games){ if(!g.gid || !g.opp) continue; const k = g.gid + "|" + g.opp; tg[k] = (tg[k] || 0) + g.FG3A; }
-  const acc = {};
-  for(const [k, v] of Object.entries(tg)){ const o = k.split("|")[1]; (acc[o] = acc[o] || []).push(v); }
-  const avg = Object.fromEntries(Object.entries(acc).map(([o, a]) => [o, mean(a)]));
-  const order = Object.keys(avg).sort((a, b) => avg[b] - avg[a]);
-  return {avg, rank: Object.fromEntries(order.map((o, i) => [o, i + 1])), n: order.length};
-}
-function scorerRanks(){
-  const byTeam = {};
-  for(const p of players){ const tg = new Set(players.filter(q => q.team === p.team).flatMap(q => q.games.map(g => g.gid))).size;
-    if(p.games.length < tg / 2) continue; (byTeam[p.team] = byTeam[p.team] || []).push(p); }
-  const r = {};
-  for(const t in byTeam) byTeam[t].sort((a, b) => mean(b.games.map(g => g.PTS)) - mean(a.games.map(g => g.PTS))).forEach((p, i) => r[p.id] = i + 1);
-  return r;
-}
-const ord = n => n + (["th","st","nd","rd"][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)] || "th");
-function renderCustom(){
-  savePrefs();
-  const k = $("cStat").value, lo = parseFloat($("cMin").value), hi = parseFloat($("cMax").value);
-  const maxD = $("cDuds").value.trim() === "" ? Infinity : parseInt($("cDuds").value), min3 = parseFloat($("c3pa").value) || 0;
-  const minG = parseInt($("cGames").value) || 4, role = $("cRole").value, drop = $("dropShort").checked;
-  const ranks = scorerRanks(), D = defense(), term = $("search").value.trim().toLowerCase();
-  const opp = {}; ((TODAY && TODAY.games) || []).forEach(g => { opp[g.home] = g.away; opp[g.away] = g.home; });
-  const res = [];
-  for(const p of players){
-    if(teams.size && !teams.has(p.team)) continue;
-    if(term && !p.name.toLowerCase().includes(term)) continue;
-    const games = drop ? p.games.filter(g => g.min >= 0.6 * p.usualMin) : p.games;
-    if(games.length < minG) continue;
-    const v = games.map(g => g[k]), avg = mean(v);
-    if(!isNaN(lo) && avg < lo) continue;
-    if(!isNaN(hi) && avg > hi) continue;
-    const a3 = mean(games.map(g => g.FG3A)); if(a3 < min3) continue;
-    const duds = v.filter(x => x < avg / 2).length; if(duds > maxD) continue;
-    const rk = ranks[p.id] || 99;
-    if(role === "2-5" && !(rk >= 2 && rk <= 5)) continue;
-    if(role === "3-6" && !(rk >= 3 && rk <= 6)) continue;
-    const line = isNaN(lo) ? avg : lo, hits = v.filter(x => x >= line).length, srt = [...v].sort((a, b) => a - b);
-    const mins = games.map(g => g.min);
-    res.push({p, avg, hits, n: v.length, duds, rk, p10: quant(srt, 0.1), p90: quant(srt, 0.9), a3, mins, line, v});
-  }
-  res.sort((a, b) => b.hits / b.n - a.hits / a.n || a.duds - b.duds || b.n - a.n);
-  const threes = k === "FG3M" || k === "FG3A";
-  $("summary").textContent = `${res.length} players match. Hit rate is counted at ${isNaN(lo) ? "each player's own average" : lo + "+"}.` + (TODAY ? "" : " Tonight's opponents show once the page is hosted on GitHub.");
-  $("list").innerHTML = res.slice(0, shown).map((r, i) => {
-    const o = opp[r.p.team], dl = o && D.avg[o] != null ? `<div class="cline">Tonight vs ${o}: allows ${fmt(D.avg[o])} 3PA a game (${ord(D.rank[o])} most of ${D.n})</div>` : (o ? `<div class="cline">Tonight vs ${o}</div>` : "");
-    const m3 = r.p.games.reduce((s, g) => s + g.FG3M, 0), at = r.p.games.reduce((s, g) => s + g.FG3A, 0);
-    return `<div class="row"><div class="name">${i + 1}. ${r.p.name}, ${r.p.team} ${r.p.pos || ""}${r.rk < 99 ? ` · ${ord(r.rk)} scorer` : ""}</div>
-      <div class="cline"><b>${r.hits} of ${r.n}</b> games at ${fmt(r.line)}+ · avg ${fmt(r.avg)} · usual range ${fmt(r.p10)} to ${fmt(r.p90)} · duds ${r.duds}</div>
-      <div class="cline">Minutes ${fmt(mean(r.mins))} a game, low ${fmt(Math.min(...r.mins))}${threes ? ` · 3PA ${fmt(r.a3)} · 3P% ${at ? Math.round(m3 / at * 100) : 0}%` : ""}</div>${threes || o ? dl : ""}
-      <div class="cline" style="color:var(--muted)">Last ${Math.min(8, r.v.length)}: ${r.v.slice(-8).map(x => fmt(x)).join(", ")}</div></div>`;
-  }).join("") || `<div class="empty"><h2>No matches</h2><p>Widen the average range, allow another dud, or lower the minimum games.</p></div>`;
-  $("more").hidden = res.length <= shown;
-}
-
+/* ---------- render ---------- */
 /* ---------- prices: hit rate vs. market at the same threshold ---------- */
-let PROPS = null;
-const STAT_NAME = {PTS: "Points", REB: "Rebounds", AST: "Assists", FG3M: "Threes", FG3A: "3PA", PRA: "PRA", PR: "Pts+Reb", PA: "Pts+Ast", RA: "Reb+Ast"};
+const STAT_NAME = {total_tds: "Anytime TD", receptions: "Receptions", receiving_yards: "Rec yards", rushing_yards: "Rush yards", carries: "Rush attempts",
+                   rush_rec_yds: "Rush + rec yards", passing_yards: "Pass yards", passing_tds: "Pass TDs"};
 const pnorm = s => String(s).toLowerCase().replace(/[’'.]/g, "").replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "").replace(/[^a-z]/g, "");
 const pkey = s => { const w = String(s).toLowerCase().replace(/[’'.]/g, "").replace(/\b(jr|sr|ii|iii|iv|v)\b/g, "").replace(/[^a-z ]/g, "").split(" ").filter(Boolean); return w.length > 1 ? w[w.length - 1] + "|" + w[0][0] : pnorm(s); };
 function matchPlayer(name){
@@ -605,157 +357,193 @@ function matchPlayer(name){
   const k = pkey(name), hits = players.filter(p => pkey(p.name) === k);
   return hits.length === 1 ? hits[0] : null;
 }
-function priceRows(){
-  if(!PROPS) return [];
-  const drop = $("dropShort").checked, groups = {};
-  for(const r of PROPS.props){
-    const k = r.player + "|" + r.stat + "|" + r.at_least;
-    (groups[k] = groups[k] || {player: r.player, stat: r.stat, at: r.at_least, game: r.game, books: {}}).books[r.book] = r;
-  }
-  const out = [];
-  for(const g of Object.values(groups)){
-    const p = matchPlayer(g.player); if(!p) continue;
-    if(teams.size && !teams.has(p.team)) continue;   /* respect the team picker, like the other tabs */
-    const games = drop ? p.games.filter(x => x.min >= 0.6 * p.usualMin) : p.games;
-    if(!games.length) continue;
-    const v = games.map(x => x[g.stat]), hits = v.filter(x => x >= g.at).length, avg = mean(v), srt = [...v].sort((a, b) => a - b);
-    const nv = g.books.novig, dk = g.books.draftkings, fd = g.books.fanduel;
-    const mkt = nv ? (nv.fair ?? nv.prob) : dk ? dk.prob : fd ? fd.prob : null; if(mkt == null) continue;
-    out.push({p, g, n: v.length, hits, rate: hits / v.length, mkt, gap: hits / v.length - mkt, floor: quant(srt, 0.1), duds: v.filter(x => x < avg / 2).length, nv, dk, fd, last: v.slice(-6)});
-  }
-  return out;
-}
 function renderPrices(){
   savePrefs();
-  const term = $("search").value.trim().toLowerCase();
-  if(!PROPS){ $("summary").textContent = "Prices load from the daily data on GitHub once the PropLine key is added. They don't show in the preview link."; $("list").innerHTML = ""; $("more").hidden = true; return; }
-  let rows = priceRows();
-  const lo = (parseFloat($("pLo").value) || 20) / 100, hi = (parseFloat($("pHi").value) || 80) / 100, mg = (parseFloat($("pGap").value) || 10) / 100, minG = parseInt($("pGames").value) || 5;
+  if(!PROPS){ $("summary").textContent = "Prices appear after the weekly data job runs with the PropLine key."; $("list").innerHTML = ""; $("more").hidden = true; return; }
+  const term = $("search").value.trim().toLowerCase(), dropSnap = parseFloat($("dropSnap").value) || 0, lastN = parseInt($("lastN").value) || 0;
+  const lo = (parseFloat($("pLo").value) || 20) / 100, hi = (parseFloat($("pHi").value) || 80) / 100, mg = (parseFloat($("pGap").value) || 10) / 100;
+  const minG = parseInt($("pGames").value) || 4, sortBy = $("pSort").value;
+  const groups = {};
+  for(const r of PROPS.props){ const k = r.player + "|" + r.stat + "|" + r.at_least;
+    (groups[k] = groups[k] || {player: r.player, stat: r.stat, at: r.at_least, game: r.game, books: {}}).books[r.book] = r; }
+  let rows = [];
+  for(const g of Object.values(groups)){
+    const p = matchPlayer(g.player); if(!p) continue;
+    if(positions.size && !positions.has(p.pos)) continue;
+    if(teams.size && !teams.has(p.team)) continue;
+    if(term && !p.name.toLowerCase().includes(term)) continue;
+    let games = p.games.filter(x => x.snap_pct === null || x.snap_pct >= dropSnap);
+    if(lastN) games = games.slice(-lastN);
+    if(!games.length) continue;
+    const v = games.map(x => x[g.stat] || 0), hits = v.filter(x => x >= g.at).length, avg = mean(v), srt = [...v].sort((a, b) => a - b);
+    const nv = g.books.novig, dk = g.books.draftkings, fd = g.books.fanduel;
+    const mkt = nv ? (nv.fair ?? nv.prob) : dk ? dk.prob : fd ? fd.prob : null; if(mkt == null) continue;
+    rows.push({p, g, n: v.length, hits, rate: hits / v.length, mkt, gap: hits / v.length - mkt, floor: quant(srt, 0.1), duds: v.filter(x => x < avg / 2).length, nv, dk, fd, last: v.slice(-6)});
+  }
   if(term){
-    rows = rows.filter(r => r.p.name.toLowerCase().includes(term));
-    $("summary").textContent = `Player board: every priced prop for "${$("search").value.trim()}", best gap first. Range and gap filters are off while searching.`;
+    $("summary").textContent = `Player board: every priced prop for "${$("search").value.trim()}". Range and gap filters are off while searching.`;
   } else {
     rows = rows.filter(r => r.mkt >= lo && r.mkt <= hi && r.gap >= mg && r.n >= minG);
-    const best = {};   /* one line per player and stat: the threshold with the biggest gap */
-    rows.forEach(r => { const k = r.p.id + "|" + r.g.stat; if(!best[k] || r.gap > best[k].gap) best[k] = r; });
+    const best = {};   /* one line per player and stat: the highest hit rate, then the biggest gap */
+    rows.forEach(r => { const k = r.p.id + "|" + r.g.stat, b = best[k]; if(!b || r.rate > b.rate || (r.rate === b.rate && r.gap > b.gap)) best[k] = r; });
     rows = Object.values(best);
-    $("summary").textContent = `${rows.length} player props with gaps (best line each): hit rate at least ${Math.round(mg * 100)} points above a ${Math.round(lo * 100)} to ${Math.round(hi * 100)}% price. Prices as of ${new Date(PROPS.updated).toLocaleString()}.`;
+    $("summary").textContent = `${rows.length} props priced ${Math.round(lo * 100)} to ${Math.round(hi * 100)}% with a hit rate ${Math.round(mg * 100)}+ points above the price. Prices as of ${new Date(PROPS.updated).toLocaleString()}.`;
   }
-  rows.sort((a, b) => b.gap - a.gap);
+  rows.sort(sortBy === "gap" ? (a, b) => b.gap - a.gap || b.rate - a.rate : (a, b) => b.rate - a.rate || b.gap - a.gap || b.n - a.n);
   const pc = x => Math.round(x * 100) + "%";
   const book = (lab, r) => r ? `${lab} ${pc(r.fair ?? r.prob)}${r.liquidity != null ? ` ($${Math.round(r.liquidity)})` : ""}` : "";
-  $("list").innerHTML = rows.slice(0, shown).map((r, i) => `<div class="row"><div class="name">${i + 1}. ${r.p.name}, ${r.p.team} · ${STAT_NAME[r.g.stat]} ${r.g.at}+</div>
-    <div class="cline"><b>${r.hits} of ${r.n} (${pc(r.rate)})</b> vs market ${pc(r.mkt)} · <b style="color:${r.gap >= 0.1 ? "var(--hit)" : r.gap <= -0.1 ? "var(--miss)" : "inherit"}">gap ${r.gap >= 0 ? "+" : ""}${Math.round(r.gap * 100)}</b></div>
-    <div class="cline">${[book("Novig", r.nv), book("DK", r.dk), book("FD", r.fd)].filter(Boolean).join(" · ")}${r.nv && r.nv.liquidity != null && r.nv.liquidity < 25 ? ` <span class="tag eff">thin Novig market</span>` : ""}</div>
-    <div class="cline" style="color:var(--muted)">Floor ${fmt(r.floor)} · duds ${r.duds} · last ${r.last.length}: ${r.last.map(x => fmt(x)).join(", ")} · ${r.g.game}</div></div>`).join("") ||
-    `<div class="empty"><h2>No ${term ? "priced props for that name" : "gaps in range"}</h2><p>${term ? "Prices only exist for players in tonight's games." : "Widen the price range or lower the minimum gap."}</p></div>`;
+  const lab = (g) => g.stat === "total_tds" ? (g.at === 1 ? "Anytime TD" : `${g.at}+ TDs`) : `${STAT_NAME[g.stat] || g.stat} ${g.at}+`;
+  $("list").innerHTML = rows.slice(0, shown).map((r, i) => `<div class="row"><div class="name">${i + 1}. ${r.p.name}, ${r.p.pos} ${r.p.team} · ${lab(r.g)}</div>
+    <div class="cline"><b>${r.hits} of ${r.n} (${pc(r.rate)})</b> vs market ${pc(r.mkt)} · <b style="color:${r.gap >= 0.1 ? "var(--up)" : r.gap <= -0.1 ? "var(--down)" : "inherit"}">gap ${r.gap >= 0 ? "+" : ""}${Math.round(r.gap * 100)}</b></div>
+    <div class="cline">${[book("Novig", r.nv), book("DK", r.dk), book("FD", r.fd)].filter(Boolean).join(" · ")}${r.nv && r.nv.liquidity != null && r.nv.liquidity < 25 ? `<span class="thin">thin Novig market</span>` : ""}</div>
+    <div class="cline" style="color:var(--muted)">Floor ${fmt(Math.round(r.floor * 10) / 10)} · duds ${r.duds} · last ${r.last.length}: ${r.last.map(x => fmt(x)).join(", ")} · ${r.g.game}</div></div>`).join("") ||
+    `<div class="empty"><h2>No ${term ? "priced props for that name" : "props in range"}</h2><p>${term ? "Prices only exist for upcoming games." : "Widen the price range or lower the minimum gap."}</p></div>`;
   $("more").hidden = rows.length <= shown;
 }
 
 function render(){
   if(view === "prices") return renderPrices();
-  if(view === "custom") return renderCustom();
   if(view === "scan") return renderScan();
   savePrefs();
-  const {out, line, stat, eff, projMin} = compute();
+  const {out, line, stat, eff} = compute();
   const label = $("stat").selectedOptions[0].textContent;
-  $("summary").textContent = early + `${out.length} players match` +
-    (line === null ? `. Type a line at the top to see hit rates.` : ` for ${label} ${lineText(line)}.`) +
-    (eff !== $("sort").value ? " Sorted by floor ratio." : "");
-  const list = out.slice(0, shown).map((r, i) => {
-    const bigVal = r.hit === null ? "–" : Math.round(r.hit * 100) + "%";
-    const bigLab = r.hit === null ? "Add a line" : `${r.hits} of ${r.n}`;
-    return `<div class="row" tabindex="0" data-i="${i}">
-      <div class="rhead">
-        <div><div class="name">${r.p.name}</div><div class="team">${r.p.team} · ${fmt(r.p.avgMin)} min</div></div>
-        <div class="big num">${bigVal}<small>${bigLab}</small></div>
-      </div>
-      <div class="stats">
-        <span>Avg<b>${fmt(r.avg)}</b></span><span>Med<b>${fmt(r.med)}</b></span>
-        <span>10th<b>${fmt(r.p10)}</b></span><span>Ratio<b>${r.ratio.toFixed(2)}</b></span>
-        <span class="duds">Duds<b>${r.duds}</b></span><span>Games<b>${r.n}</b></span>
-        <span>Per min<b>${r.pm.toFixed(2)}</b></span>${r.proj !== null ? `<span>Proj @ ${fmt(projMin)} min<b>${fmt(r.proj)}</b></span>` : ""}${view === "curve" ? `<span>Shape<b>${shapeScore(r)}</b></span>` : ""}${view === "ring" ? `<span>Roundness<b>${roundness(r)}</b></span>` : ""}
-      </div>
-      ${(stat === "FG3M" || stat === "FG3A") ? volumeLine(r.p) : ""}
-      ${view === "curve" ? curve(r, line) : view === "ring" ? ring(r, line) : strip(r, line)}
-      ${ladder(r)}
-    </div>`;
-  }).join("");
-  $("list").innerHTML = list || `<div class="empty"><h2>No players match</h2><p>Lower the minutes or games filter, raise max dud games, or clear the search.</p></div>`;
+  $("summary").textContent = `${out.length} players` + (line === null ? `. Type a line at the top to see hit rates.` : ` for ${label} ${lineText(line)}.`) + (eff !== $("sort").value ? " Sorted by average." : "");
+  $("list").innerHTML = out.slice(0, shown).map(r => {
+    const big = r.hit === null ? "–" : Math.round(r.hit * 100) + "%", sub = r.hit === null ? "Add a line" : `${r.hits} of ${r.n}`;
+    const tr = r.trend === null ? "" : `<span class="${r.trend > 0 ? "pos" : r.trend < 0 ? "neg" : ""}">Trend<b>${r.trend > 0 ? "+" : ""}${fmt(r.trend)}</b></span>`;
+    const cp = r.catchPct === null || r.p.pos === "QB" ? "" : `<span>Catch<b>${Math.round(r.catchPct)}%</b></span>`;
+    const extra = view === "curve" ? `<span>Shape<b>${shapeScore(r, stat)}</b></span>` : view === "ring" ? `<span>Roundness<b>${roundness(r)}</b></span>` : "";
+    const vis = view === "curve" ? curve(r, line, stat) : view === "ring" ? ring(r, line) : strip(r, line);
+    return `<div class="row" tabindex="0">
+      <div class="rhead"><div><div class="name">${r.p.name}</div><div class="team">${r.p.pos}, ${r.p.team}, ${Math.round(r.avgSnap)}% snaps</div></div>
+      <div class="big num">${big}<small>${sub}</small></div></div>
+      <div class="stats"><span>Avg<b>${fmt(r.avg)}</b></span><span>Med<b>${fmt(r.med)}</b></span><span>10th<b>${fmt(r.p10)}</b></span>
+      <span>Ratio<b>${r.ratio.toFixed(2)}</b></span><span class="dud">Duds<b>${r.duds}</b></span><span>Games<b>${r.n}</b></span>${tr}${cp}${extra}</div>
+      ${vis}${ladder(r, stat)}</div>`;
+  }).join("") || `<div class="empty"><h2>No players match</h2><p>Lower the snap % or games filter, raise max dud games, or clear positions and teams.</p></div>`;
   $("more").hidden = out.length <= shown;
 }
-
-/* ---------- loading ---------- */
-function useText(name, text){
-  const rows = parseCSV(text);
-  if(!rows.length || !("PTS" in rows[0])){ alert("That file doesn’t look like the game log CSV. Pick an nba_gamelogs file."); return; }
-  players = build(rows);
-  const maxG = players.reduce((m, p) => Math.max(m, p.games.length), 0);
-  early = "";
-  if(maxG < (parseInt($("minGames").value) || 1)){
-    $("minGames").value = Math.max(1, Math.ceil(maxG / 2));
-    $("minTot").value = Math.round(maxG * 12);
-    early = `Early season (${maxG} games max): filters loosened to ${$("minGames").value}+ games. `;
-  }
-  const m = name.match(/(\d{4}-\d{2})/);
-  $("season").textContent = m ? m[1] + " season" : "";
-  $("empty").hidden = true; $("results").hidden = false;
-  renderTeams();
-  shown = 60; render();
-}
-document.querySelectorAll(".fileinput").forEach(inp => inp.onchange = e => {
-  const f = e.target.files[0]; if(!f) return;
-  const rd = new FileReader();
-  rd.onload = () => { saveCSV(f.name, rd.result); useText(f.name, rd.result); };
-  rd.readAsText(f);
-  e.target.value = "";
-});
-$("optsToggle").onclick = () => { optsOpen = !optsOpen; syncViews(); };
-$("toggle").onclick = () => {
-  const open = $("filters").classList.toggle("open");
-  $("toggle").setAttribute("aria-expanded", open);
+/* ---------- bulk scan ---------- */
+const SCAN = {
+  QB: ["passing_yards","passing_tds","rushing_yards","carries"],
+  RB: ["rushing_yards","carries","rush_rec_yds","receptions","targets","rz_carries","snap_pct"],
+  WR: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"],
+  TE: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"]
 };
-["stat","line","minMin","maxMin","minTot","projMin","minGames","maxDuds","sort","search","dropShort","scanMode","cStat","cMin","cMax","cDuds","c3pa","cGames","cRole","pLo","pHi","pGap","pGames"].forEach(id =>
-  $(id).addEventListener("input", () => { shown = 60; render(); }));
-$("more").onclick = () => { shown += 60; render(); };
-function syncViews(){ document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view)); $("scanbar").hidden = view !== "scan"; $("optsToggle").hidden = view !== "custom" && view !== "prices"; $("optsToggle").textContent = optsOpen ? "Hide options" : "Show options"; $("optsToggle").setAttribute("aria-expanded", optsOpen); $("custombar").hidden = view !== "custom" || !optsOpen; $("pricebar").hidden = view !== "prices" || !optsOpen; $("stat").disabled = $("line").disabled = view === "scan" || view === "custom" || view === "prices"; }
+const MINAVG = {passing_yards:100, passing_tds:0.5, rushing_yards:15, carries:3, rush_rec_yds:20, receptions:1.5,
+  targets:2, receiving_yards:15, rz_targets:0.3, rz_carries:0.3, target_share:5, snap_pct:0};
+const mean = a => a.reduce((s,v) => s + v, 0) / a.length;
+function statLabel(k){ const o = $("stat").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; }
+
+function renderScan(){
+  savePrefs();
+  const type = $("scanType").value;
+  const minSnap = parseFloat($("minSnap").value) || 0, minGames = parseInt($("minGames").value) || 1;
+  const lastN = parseInt($("lastN").value) || 0, dropSnap = parseFloat($("dropSnap").value) || 0;
+  const term = $("search").value.trim().toLowerCase();
+  const pool = [];
+  for(const p of players){
+    if(!SCAN[p.pos]) continue;
+    if(positions.size && !positions.has(p.pos)) continue;
+    if(teams.size && !teams.has(p.team)) continue;
+    if(term && !p.name.toLowerCase().includes(term)) continue;
+    let games = p.games.filter(g => g.snap_pct === null || g.snap_pct >= dropSnap);
+    if(lastN) games = games.slice(-lastN);
+    if(games.length < Math.max(minGames, type === "last3" ? 4 : 1)) continue;
+    const sg = games.filter(g => g.snap_pct !== null);
+    const avgSnap = sg.length ? mean(sg.map(g => g.snap_pct)) : 0;
+    if(avgSnap < minSnap) continue;
+    pool.push({p, games});
+  }
+  const posAvg = {};
+  if(type === "pos"){
+    const acc = {};
+    for(const it of pool) for(const st of SCAN[it.p.pos]){
+      const k = it.p.pos + "|" + st; acc[k] = acc[k] || [0,0];
+      it.games.forEach(g => { acc[k][0] += g[st] || 0; acc[k][1]++; });
+    }
+    for(const k in acc) posAvg[k] = acc[k][0] / acc[k][1];
+  }
+  const res = [];
+  for(const it of pool) for(const st of SCAN[it.p.pos]){
+    const vals = it.games.map(g => g[st] || 0), avg = mean(vals);
+    if(avg < MINAVG[st] || avg <= 0) continue;
+    let k, den, bench, recentAvg = null, score;
+    if(type === "last3"){
+      const rec = vals.slice(-3); bench = avg; k = rec.filter(v => v > avg).length; den = 3;
+      recentAvg = mean(rec); score = k * 1000 + (recentAvg - avg) / avg * 100;
+    }else if(type === "season"){
+      bench = avg; k = vals.filter(v => v > avg).length; den = vals.length; score = k / den * 1000 + den;
+    }else{
+      bench = posAvg[it.p.pos + "|" + st]; if(!bench) continue;
+      k = vals.filter(v => v > bench).length; den = vals.length; score = k / den * 1000 + avg / bench;
+    }
+    res.push({p: it.p, st, vals, sorted: [...vals].sort((a,b) => a - b), avg, bench, k, den, recentAvg, score});
+  }
+  res.sort((a,b) => b.score - a.score);
+  const desc = {last3: "last 3 above his avg", season: "games above his avg", pos: "games above position avg"}[type];
+  $("summary").textContent = `${res.length} player and stat combos scanned. Showing the top ${Math.min(res.length, shown)}.`;
+  $("list").innerHTML = res.slice(0, shown).map((r, i) => {
+    const diff = type === "last3" ? r.recentAvg - r.avg : r.avg - r.bench;
+    return `<div class="row" tabindex="0">
+      <div class="rhead"><div><div class="name">${i + 1}. ${r.p.name}</div><div class="team">${r.p.pos}, ${r.p.team}, ${statLabel(r.st)}</div></div>
+      <div class="big num">${r.k}/${r.den}<small>${desc}</small></div></div>
+      <div class="stats"><span>His avg<b>${fmt(r.avg)}</b></span>
+      ${type === "last3" ? `<span>Last 3 avg<b>${fmt(r.recentAvg)}</b></span>` : type === "pos" ? `<span>Pos avg<b>${fmt(r.bench)}</b></span>` : ""}
+      ${type !== "season" ? `<span class="${diff >= 0 ? "pos" : "neg"}">Diff<b>${diff >= 0 ? "+" : ""}${fmt(diff)}</b></span>` : ""}<span>Games<b>${r.vals.length}</b></span></div>
+      ${strip(r, r.bench)}</div>`;
+  }).join("") || `<div class="empty"><h2>Nothing to scan</h2><p>Loosen the snap %, games, position, or team filters.</p></div>`;
+  $("more").hidden = res.length <= shown;
+}
+
 function renderTeams(){
   const all = [...new Set(players.map(p => p.team).filter(Boolean))].sort();
   for(const t of [...teams]) if(!all.includes(t)) teams.delete(t);
   $("teams").innerHTML = all.map(t => `<button type="button" data-team="${t}" aria-pressed="${teams.has(t)}">${t}</button>`).join("");
 }
-$("teams").addEventListener("click", e => {
-  const b = e.target.closest("button[data-team]"); if(!b) return;
-  const t = b.dataset.team; teams.has(t) ? teams.delete(t) : teams.add(t);
-  b.setAttribute("aria-pressed", teams.has(t)); shown = 60; render();
-});
-$("clearTeams").onclick = () => { teams.clear(); renderTeams(); shown = 60; render(); };
-document.querySelectorAll(".views button").forEach(b => b.onclick = () => { view = b.dataset.view; syncViews(); if(players.length) render(); else savePrefs(); });
-$("list").addEventListener("click", e => { const row = e.target.closest(".row"); if(row) row.classList.toggle("open"); });
-$("list").addEventListener("keydown", e => {
-  if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("row")){ e.preventDefault(); e.target.classList.toggle("open"); }
-});
+function syncChips(){
+  document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
+  $("scanbar").hidden = view !== "scan";
+  $("optsToggle").hidden = view !== "prices"; $("optsToggle").textContent = optsOpen ? "Hide options" : "Show options";
+  $("pricebar").hidden = view !== "prices" || !optsOpen;
+  $("stat").disabled = $("line").disabled = view === "scan" || view === "prices";
+  document.querySelectorAll("#positions button").forEach(b => b.setAttribute("aria-pressed", positions.has(b.dataset.pos)));
+}
+function useText(text, info){
+  const rows = parseCSV(text);
+  if(!rows.length || !("receptions" in rows[0])){ alert("That file doesn’t look like the nfl_weekly CSV."); return; }
+  players = build(rows);
+  $("season").textContent = info ? `${info.season} season, through week ${info.through_week}` : "Loaded from file";
+  $("empty").hidden = true; $("results").hidden = false;
+  renderTeams(); shown = 60; render();
+}
 
-loadPrefs();
-syncViews();
-(async () => {
-  try{
-    /* read straight from the repo so a slow GitHub Pages rebuild never serves stale data or misses new files */
-    const gh = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/").filter(Boolean)[0];
-    const base = gh && repo ? `https://raw.githubusercontent.com/${gh[1]}/${repo}/main/data/` : "data/";
-    const get = async (f, json) => { let r = await fetch(base + f + (base === "data/" ? "" : "?t=" + Date.now()), {cache: "no-store"});
-      if(!r.ok && base !== "data/") r = await fetch("data/" + f, {cache: "no-store"});
-      if(!r.ok) throw new Error(f); return json ? r.json() : r.text(); };
-    const meta = await get("latest.json", true);
-    const text = await get(meta.file, false);
-    try{ TODAY = await get("today.json", true); }catch(e){ TODAY = null; }
-    try{ PROPS = await get("props.json", true); }catch(e){ PROPS = null; }
-    useText(meta.file, text);
-    if(meta.updated) $("season").textContent += " · updated " + new Date(meta.updated).toLocaleDateString();
-    return;
-  }catch(e){}
-  const s = await loadSaved(); if(s && s.text) useText(s.name, s.text);
-})();
+/* ---------- events ---------- */
+INPUTS.forEach(id => $(id).addEventListener("input", () => { shown = 60; render(); }));
+$("toggle").onclick = () => $("toggle").setAttribute("aria-expanded", $("filters").classList.toggle("open"));
+$("optsToggle").onclick = () => { optsOpen = !optsOpen; syncChips(); };
+$("more").onclick = () => { shown += 60; render(); };
+document.querySelectorAll(".views button").forEach(b => b.onclick = () => { view = b.dataset.view; syncChips(); if(players.length) render(); });
+$("positions").addEventListener("click", e => { const b = e.target.closest("button[data-pos]"); if(!b) return;
+  positions.has(b.dataset.pos) ? positions.delete(b.dataset.pos) : positions.add(b.dataset.pos); syncChips(); shown = 60; render(); });
+$("teams").addEventListener("click", e => { const b = e.target.closest("button[data-team]"); if(!b) return;
+  const t = b.dataset.team; teams.has(t) ? teams.delete(t) : teams.add(t); b.setAttribute("aria-pressed", teams.has(t)); shown = 60; render(); });
+$("clearTeams").onclick = () => { teams.clear(); renderTeams(); shown = 60; render(); };
+$("list").addEventListener("click", e => { const row = e.target.closest(".row"); if(row) row.classList.toggle("open"); });
+$("list").addEventListener("keydown", e => { if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("row")){ e.preventDefault(); e.target.classList.toggle("open"); } });
+$("file").onchange = e => { const f = e.target.files[0]; if(!f) return; const rd = new FileReader(); rd.onload = () => useText(rd.result, null); rd.readAsText(f); e.target.value = ""; };
+
+/* ---------- start: auto-load latest data ---------- */
+loadPrefs(); syncChips();
+/* read straight from the repo, so a slow GitHub Pages rebuild never serves stale data */
+const gh = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/").filter(Boolean)[0];
+const base = gh && repo ? `https://raw.githubusercontent.com/${gh[1]}/${repo}/main/data/` : "data/";
+const getData = async f => { let r = await fetch(base + f + (base === "data/" ? "" : "?t=" + Date.now()), {cache: "no-store"});
+  if(!r.ok && base !== "data/") r = await fetch("data/" + f, {cache: "no-store"}); if(!r.ok) throw 0; return r; };
+getData("props.json").then(r => r.json()).then(j => { PROPS = j; if(players.length && view === "prices") render(); }).catch(() => {});
+getData("latest.json").then(r => r.json())
+  .then(info => getData(info.file).then(r => r.text()).then(t => useText(t, info)))
+  .catch(() => { $("season").textContent = ""; $("empty").hidden = false; });
 })();
 </script>
 </body>
