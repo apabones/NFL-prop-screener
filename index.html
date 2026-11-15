@@ -53,6 +53,18 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .rec{display:grid;grid-template-columns:1fr auto auto;gap:4px 12px;font-size:13.5px;font-variant-numeric:tabular-nums;margin-top:4px}
 .rec .h{color:var(--muted);font-size:12px}
 .setup input{width:100%;font:500 14px Barlow,sans-serif;padding:8px;border-radius:8px;border:1px solid var(--rule);background:transparent;color:inherit;margin:6px 0}
+.gm .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.gm .when{font-size:12.5px;color:var(--muted)}
+.wx{font-size:13.5px;margin-top:6px}
+.wx b.bad{color:var(--down)}
+.tm{margin-top:8px}
+.tm .lbl{font:700 14px Barlow,sans-serif}
+.chip{display:inline-block;margin:3px 5px 0 0;padding:1px 8px;border-radius:999px;font-size:12.5px;border:1px solid var(--rule)}
+.chip.out{background:color-mix(in srgb,var(--down) 16%,transparent);color:var(--down);border-color:transparent;font-weight:600}
+.chip.dbt{background:color-mix(in srgb,#d97706 18%,transparent);color:#b45309;border-color:transparent;font-weight:600}
+.chip.minor{opacity:.6}
+.rzt{display:grid;grid-template-columns:auto 1fr 1fr;gap:3px 10px;font-size:13px;margin-top:8px;font-variant-numeric:tabular-nums}
+.rzt .h{color:var(--muted);font-size:12px}
 .thin{font:600 12px Barlow,sans-serif;padding:1px 7px;border-radius:999px;background:color-mix(in srgb,var(--down) 15%,transparent);color:var(--down);margin-left:4px}
 .toprow{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 h1{margin:0;font-size:24px;font-weight:700}
@@ -133,6 +145,7 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
     <button data-view="scan" aria-pressed="false">Scan</button>
     <button data-view="prices" aria-pressed="false">Prices</button>
     <button data-view="picks" aria-pressed="false">Picks</button>
+    <button data-view="games" aria-pressed="false">Games</button>
   </div>
   <button class="opts" id="optsToggle" type="button" aria-expanded="true" hidden>Hide options</button>
   <div class="cbox" id="pricebar" hidden>
@@ -491,7 +504,50 @@ function renderPrices(){
   $("more").hidden = rows.length <= shown;
 }
 
+/* ---------- Games: key offensive injuries, weather, red zone ---------- */
+let GAMES = null;
+const ordn = n => n == null ? "" : n + (["th","st","nd","rd"][(n % 100 > 10 && n % 100 < 14) ? 0 : (n % 10 < 4 ? n % 10 : 0)] || "th");
+function renderGames(){
+  $("more").hidden = true;
+  if(!GAMES){ $("summary").textContent = "Games appear after the next data run."; $("list").innerHTML = ""; return; }
+  const term = $("search").value.trim().toUpperCase();
+  let gs = GAMES.games.filter(g => (!teams.size || teams.has(g.away) || teams.has(g.home)) && (!term || (g.away + " " + g.home).includes(term)));
+  const st = GAMES.status || {};
+  $("summary").textContent = `${gs.length} games in the next week · injuries ${st.injuries || "?"} · weather ${st.weather || "?"} · updated ${new Date(GAMES.updated).toLocaleString()}`;
+  const fmtTime = g => { const d = new Date(g.day + "T12:00:00"); return `${d.toLocaleDateString(undefined, {weekday: "short", month: "short", day: "numeric"})}${g.time ? " · " + (() => { const [h, m] = g.time.split(":").map(Number); return ((h + 11) % 12 + 1) + ":" + String(m).padStart(2, "0") + (h >= 12 ? " PM" : " AM"); })() + " ET" : ""}`; };
+  const line = g => g.spread == null ? "" : g.spread > 0 ? `${g.home} -${g.spread}` : g.spread < 0 ? `${g.away} -${-g.spread}` : "Pick'em";
+  const wxLine = g => {
+    if(g.venue === "dome") return `<div class="wx">🏟️ Indoors</div>`;
+    if(g.venue === "retractable roof") return `<div class="wx">🏟️ Retractable roof, usually closed in bad weather</div>`;
+    const w = g.weather; if(!w) return `<div class="wx" style="color:var(--muted)">Forecast not available yet</div>`;
+    const warn = w.flags && w.flags.length ? `<b class="bad">⚠️ Passing weather: ${w.flags.join(", ")}</b><br>` : "";
+    const days = Math.round((new Date(g.day + "T12:00:00") - new Date()) / 864e5);
+    return `<div class="wx">${warn}${w.temp}°F · rain ${w.rain_chance ?? 0}% (${w.rain_in}" during the game) · wind ${w.wind} mph, gusts ${w.gusts}${days > 2 ? ` <span style="color:var(--muted)">· early forecast</span>` : ""}</div>`;
+  };
+  const injBlock = (t, list) => {
+    const skill = list.filter(i => i.group === "skill" && !i.long), line = list.filter(i => i.group === "line" && !i.long), longs = list.filter(i => i.long && i.key);
+    const chip = i => { const s = i.status.toLowerCase(), cls = s.includes("out") ? "out" : s.includes("doubt") ? "dbt" : "";
+      const r = i.role, what = r ? (i.pos === "QB" ? `${r.att} att` : r.car >= 5 ? `${r.car} car` : `${r.tgt} tgt`) + (r.snap != null ? `, ${r.snap}% snaps` : "") : "";
+      return `<span class="chip ${cls} ${i.key ? "" : "minor"}" title="${i.injury || ""}">${i.key ? "<b>" : ""}${i.pos} ${i.player}${i.key ? "</b>" : ""} ${i.status}${what ? ` · ${what}` : ""}</span>`; };
+    return `<div class="tm"><span class="lbl">${t}</span> ${skill.map(chip).join("") || `<span class="chip minor">No skill-position injuries listed</span>`}
+      ${line.length ? `<div style="font-size:12.5px;color:var(--muted);margin-top:3px">Line: ${line.map(i => `${i.pos} ${i.player} (${i.status})`).join(", ")}</div>` : ""}
+      ${longs.length ? `<div style="font-size:12.5px;color:var(--muted);margin-top:3px">Longer-term: ${longs.map(i => `${i.pos} ${i.player} (${i.status})`).join(", ")}</div>` : ""}</div>`;
+  };
+  const rzRows = g => { const a = g.teams[g.away].rz, h = g.teams[g.home].rz; if(!a || !h) return "";
+    const pct = x => x == null ? "–" : Math.round(x * 100) + "%";
+    const cell = (v, r, fmt) => `${fmt(v)} <span style="color:var(--muted)">(${ordn(r)})</span>`;
+    return `<div class="rzt"><span class="h">Red zone</span><span class="h">${g.away} offense vs ${g.home} D</span><span class="h">${g.home} offense vs ${g.away} D</span>
+      <span>Trips / game</span><span>${cell(a.off_trips, a.off_trips_rank, x => x)} vs ${cell(h.def_trips, h.def_trips_rank, x => x)}</span><span>${cell(h.off_trips, h.off_trips_rank, x => x)} vs ${cell(a.def_trips, a.def_trips_rank, x => x)}</span>
+      <span>TD rate</span><span>${cell(a.off_td, a.off_td_rank, pct)} vs ${cell(h.def_td, h.def_td_rank, pct)}</span><span>${cell(h.off_td, h.off_td_rank, pct)} vs ${cell(a.def_td, a.def_td_rank, pct)}</span>
+      <span>RZ TDs / game</span><span>${cell(a.off_tds, a.off_tds_rank, x => x)} vs ${cell(h.def_tds, h.def_tds_rank, x => x)}</span><span>${cell(h.off_tds, h.off_tds_rank, x => x)} vs ${cell(a.def_tds, a.def_tds_rank, x => x)}</span></div>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:2px">Ranks 1 to 32: offense ranks reward more, defense ranks reward fewer allowed.</div>`; };
+  $("list").innerHTML = gs.map(g => `<div class="row gm"><div class="top"><span class="name">${g.away} at ${g.home}</span><span class="when">${fmtTime(g)}${line(g) ? " · " + line(g) : ""}${g.total ? " · O/U " + g.total : ""}</span></div>
+      ${wxLine(g)}${injBlock(g.away, g.teams[g.away].injuries)}${injBlock(g.home, g.teams[g.home].injuries)}${rzRows(g)}</div>`).join("") ||
+    `<div class="empty"><h2>No games</h2><p>Nothing scheduled in the next week${term ? " for that team" : ""}.</p></div>`;
+}
+
 function render(){
+  if(view === "games") return renderGames();
   if(view === "picks") return renderPicks();
   if(view === "prices") return renderPrices();
   if(view === "scan") return renderScan();
@@ -597,7 +653,7 @@ function syncChips(){
   $("scanbar").hidden = view !== "scan";
   $("optsToggle").hidden = view !== "prices"; $("optsToggle").textContent = optsOpen ? "Hide options" : "Show options";
   $("pricebar").hidden = view !== "prices" || !optsOpen;
-  $("stat").disabled = $("line").disabled = view === "scan" || view === "prices";
+  $("stat").disabled = $("line").disabled = view === "scan" || view === "prices" || view === "games" || view === "picks";
   document.querySelectorAll("#positions button").forEach(b => b.setAttribute("aria-pressed", positions.has(b.dataset.pos)));
 }
 function useText(text, info){
@@ -651,6 +707,7 @@ const base = gh && repo ? `https://raw.githubusercontent.com/${gh[1]}/${repo}/ma
 const getData = async f => { let r = await fetch(base + f + (base === "data/" ? "" : "?t=" + Date.now()), {cache: "no-store"});
   if(!r.ok && base !== "data/") r = await fetch("data/" + f, {cache: "no-store"}); if(!r.ok) throw 0; return r; };
 getData("props.json").then(r => r.json()).then(j => { PROPS = j; if(players.length && view === "prices") render(); }).catch(() => {});
+getData("games.json").then(r => r.json()).then(j => { GAMES = j; if(players.length && view === "games") render(); }).catch(() => {});
 getData("latest.json").then(r => r.json())
   .then(info => getData(info.file).then(r => r.text()).then(t => useText(t, info)))
   .catch(() => { $("season").textContent = ""; $("empty").hidden = false; });
