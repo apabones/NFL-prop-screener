@@ -483,7 +483,8 @@ function renderPrices(){
     rows.push({p, g, n: v.length, hits, rate: hits / v.length, mkt, gap: hits / v.length - mkt, floor: quant(srt, 0.1), duds: v.filter(x => x < avg / 2).length, nv, dk, fd, last: v.slice(-6)});
   }
   if(term){
-    $("summary").textContent = `Player board: every priced prop for "${$("search").value.trim()}". Range and gap filters are off while searching.`;
+    rows = rows.filter(r => r.n >= 3);   /* keep 1 of 1 and 2 of 2 lines off the player board */
+    $("summary").textContent = `Player board: every priced prop for "${$("search").value.trim()}" with 3+ games. Range and gap filters are off while searching.`;
   } else {
     rows = rows.filter(r => r.mkt >= lo && r.mkt <= hi && r.gap >= mg && r.n >= minG);
     const best = {};   /* one line per player and stat: the highest hit rate, then the biggest gap */
