@@ -127,6 +127,7 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
       <option value="rushing_yards">Rushing yards</option>
       <option value="carries">Rush attempts</option>
       <option value="rush_rec_yds">Rush + rec yards</option>
+      <option value="ppr">PPR fantasy points</option>
       <option value="passing_yards">Passing yards</option>
       <option value="passing_tds">Passing TDs</option>
       <option value="total_tds">Anytime TD (rush + rec)</option>
@@ -254,6 +255,9 @@ function build(rows){
     const p = map.get(r.player_id), g = {week: +r.week || 0};
     for(const k in r) if(!["player_id","player","position","team","opponent","game_id","week"].includes(k)) g[k] = r[k] === "" ? null : parseFloat(r[k]);
     g.opp = r.opponent;
+    /* PPR: 1 per catch, 0.1 per rush/rec yard, 0.04 per pass yard, 6 per rush/rec TD, 4 per pass TD, -2 per INT (no fumbles or 2-pt in the data) */
+    g.ppr = Math.round(((g.receptions||0) + ((g.rushing_yards||0) + (g.receiving_yards||0)) * 0.1 + (g.passing_yards||0) * 0.04
+      + ((g.rushing_tds||0) + (g.receiving_tds||0)) * 6 + (g.passing_tds||0) * 4 - (g.interceptions||0) * 2) * 10) / 10;
     p.games.push(g);
     if(g.week >= p.lastWeek){ p.lastWeek = g.week; p.team = r.team; }
   }
@@ -573,12 +577,12 @@ function render(){
 }
 /* ---------- bulk scan ---------- */
 const SCAN = {
-  QB: ["passing_yards","passing_tds","rushing_yards","carries"],
-  RB: ["rushing_yards","carries","rush_rec_yds","receptions","targets","rz_carries","snap_pct"],
-  WR: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"],
-  TE: ["receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"]
+  QB: ["ppr","passing_yards","passing_tds","rushing_yards","carries"],
+  RB: ["ppr","rushing_yards","carries","rush_rec_yds","receptions","targets","rz_carries","snap_pct"],
+  WR: ["ppr","receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"],
+  TE: ["ppr","receptions","targets","receiving_yards","rz_targets","target_share","snap_pct"]
 };
-const MINAVG = {passing_yards:100, passing_tds:0.5, rushing_yards:15, carries:3, rush_rec_yds:20, receptions:1.5,
+const MINAVG = {ppr:5, passing_yards:100, passing_tds:0.5, rushing_yards:15, carries:3, rush_rec_yds:20, receptions:1.5,
   targets:2, receiving_yards:15, rz_targets:0.3, rz_carries:0.3, target_share:5, snap_pct:0};
 const mean = a => a.reduce((s,v) => s + v, 0) / a.length;
 function statLabel(k){ const o = $("stat").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; }
