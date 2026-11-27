@@ -163,6 +163,10 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
       <option value="pos">Games above position average</option>
     </select>
   </div>
+  <div id="scanStatBox" hidden style="margin-top:8px">
+    <div class="subhead">Stats (none = all)<button id="allStats" type="button">All</button></div>
+    <div class="chips" id="scanStats"></div>
+  </div>
   <div id="filters">
     <div class="wide">
       <div class="subhead">Positions (none = all)</div>
@@ -216,7 +220,7 @@ svg.ring{display:block;width:190px;height:190px;margin:6px auto 0}
 const $ = id => document.getElementById(id);
 const YDS = new Set(["receiving_yards","rushing_yards","rush_rec_yds","passing_yards"]);
 const PCT = new Set(["snap_pct","target_share"]);
-let players = [], shown = 60, view = "dots", teams = new Set(), positions = new Set();
+let players = [], shown = 60, view = "dots", teams = new Set(), positions = new Set(), scanStats = new Set();
 const INPUTS = ["stat","line","minSnap","minGames","maxDuds","lastN","dropSnap","sort","search","scanType","pLo","pHi","pGap","pGames","pSort"];
 var optsOpen = true, PROPS = null;
 
@@ -224,7 +228,7 @@ var optsOpen = true, PROPS = null;
 function savePrefs(){
   try{
     const p = {}; INPUTS.forEach(k => p[k] = $(k).value);
-    p.view = view; p.teams = [...teams]; p.positions = [...positions];
+    p.view = view; p.teams = [...teams]; p.positions = [...positions]; p.scanStats = [...scanStats];
     localStorage.setItem("nflfloor-prefs", JSON.stringify(p));
   }catch(e){}
 }
@@ -235,6 +239,7 @@ function loadPrefs(){
     if(p.view) view = p.view;
     if(Array.isArray(p.teams)) teams = new Set(p.teams);
     if(Array.isArray(p.positions)) positions = new Set(p.positions);
+    if(Array.isArray(p.scanStats)) scanStats = new Set(p.scanStats);
   }catch(e){}
 }
 
@@ -618,6 +623,7 @@ function renderScan(){
   }
   const res = [];
   for(const it of pool) for(const st of SCAN[it.p.pos]){
+    if(scanStats.size && !scanStats.has(st)) continue;
     const vals = it.games.map(g => g[st] || 0), avg = mean(vals);
     if(avg < MINAVG[st] || avg <= 0) continue;
     let k, den, bench, recentAvg = null, score;
@@ -648,6 +654,10 @@ function renderScan(){
   $("more").hidden = res.length <= shown;
 }
 
+const SCAN_STATS = ["ppr","receptions","targets","receiving_yards","carries","rushing_yards","rush_rec_yds","passing_yards","passing_tds","rz_targets","rz_carries","target_share","snap_pct"];
+function renderScanStats(){
+  $("scanStats").innerHTML = SCAN_STATS.map(k => `<button type="button" data-sstat="${k}" aria-pressed="${scanStats.has(k)}">${k === "ppr" ? "PPR" : statLabel(k)}</button>`).join("");
+}
 function renderTeams(){
   const all = [...new Set(players.map(p => p.team).filter(Boolean))].sort();
   for(const t of [...teams]) if(!all.includes(t)) teams.delete(t);
@@ -655,7 +665,7 @@ function renderTeams(){
 }
 function syncChips(){
   document.querySelectorAll(".views button").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === view));
-  $("scanbar").hidden = view !== "scan";
+  $("scanbar").hidden = $("scanStatBox").hidden = view !== "scan";
   $("optsToggle").hidden = view !== "prices"; $("optsToggle").textContent = optsOpen ? "Hide options" : "Show options";
   $("pricebar").hidden = view !== "prices" || !optsOpen;
   $("stat").disabled = $("line").disabled = view === "scan" || view === "prices" || view === "games" || view === "picks";
@@ -699,13 +709,16 @@ $("positions").addEventListener("click", e => { const b = e.target.closest("butt
   positions.has(b.dataset.pos) ? positions.delete(b.dataset.pos) : positions.add(b.dataset.pos); syncChips(); shown = 60; render(); });
 $("teams").addEventListener("click", e => { const b = e.target.closest("button[data-team]"); if(!b) return;
   const t = b.dataset.team; teams.has(t) ? teams.delete(t) : teams.add(t); b.setAttribute("aria-pressed", teams.has(t)); shown = 60; render(); });
+$("scanStats").addEventListener("click", e => { const b = e.target.closest("button[data-sstat]"); if(!b) return;
+  const k = b.dataset.sstat; scanStats.has(k) ? scanStats.delete(k) : scanStats.add(k); b.setAttribute("aria-pressed", scanStats.has(k)); shown = 60; render(); });
+$("allStats").onclick = () => { scanStats.clear(); renderScanStats(); shown = 60; render(); };
 $("clearTeams").onclick = () => { teams.clear(); renderTeams(); shown = 60; render(); };
 $("list").addEventListener("click", e => { const row = e.target.closest(".row"); if(row) row.classList.toggle("open"); });
 $("list").addEventListener("keydown", e => { if((e.key === "Enter" || e.key === " ") && e.target.classList.contains("row")){ e.preventDefault(); e.target.classList.toggle("open"); } });
 $("file").onchange = e => { const f = e.target.files[0]; if(!f) return; const rd = new FileReader(); rd.onload = () => useText(rd.result, null); rd.readAsText(f); e.target.value = ""; };
 
 /* ---------- start: auto-load latest data ---------- */
-loadPrefs(); syncChips();
+loadPrefs(); renderScanStats(); syncChips();
 /* read straight from the repo, so a slow GitHub Pages rebuild never serves stale data */
 const gh = location.hostname.match(/^([^.]+)\.github\.io$/), repo = location.pathname.split("/").filter(Boolean)[0];
 const base = gh && repo ? `https://raw.githubusercontent.com/${gh[1]}/${repo}/main/data/` : "data/";
